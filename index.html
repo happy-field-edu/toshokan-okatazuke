@@ -906,9 +906,15 @@
   let drag = null;
   function setupDrag(){
     const db = $("dragBook");
+    function resetDragVisual(){
+      db.classList.remove("dragging");
+      db.removeAttribute("style");
+      clearSlotHL();
+    }
     db.onpointerdown = e=>{
       if(solved) return;
       e.preventDefault();
+      resetDragVisual();          // まえの ドラッグが のこっていても リセット
       const r = db.getBoundingClientRect();
       drag = {
         id:e.pointerId,
@@ -940,23 +946,19 @@
     };
     db.onpointerup = e=>{
       if(!drag || e.pointerId!==drag.id) return;
-      const wasDrag = drag.moved;
-      let target=null;
-      if(wasDrag){
-        target = slotUnder(e.clientX, e.clientY - drag.lift);
-        db.classList.remove("dragging");
-        db.removeAttribute("style");
-        clearSlotHL();
-      }
+      const wasDrag = drag.moved, lift = drag.lift;
+      const x = e.clientX, y = e.clientY;
       drag=null;
+      resetDragVisual();           // どんな ばあいも かならず もとに もどす
       if(wasDrag){
-        tryPlaceOn(target);
+        tryPlaceOn(slotUnder(x, y - lift));
       } else {
-        // タップ：ひろう／おく トグル
-        if(db.classList.contains("picked")){ db.classList.remove("picked"); }
-        else { db.classList.add("picked"); }
+        db.classList.toggle("picked");   // タップ：ひろう／おく
       }
     };
+    // タッチが とちゅうで きれても、本が フリーズしないように もどす
+    db.onpointercancel = ()=>{ drag=null; resetDragVisual(); };
+    db.onlostpointercapture = ()=>{ if(drag){ drag=null; resetDragVisual(); } };
     // タップでひろった後、たなを タップして いれる
     [...$("slots").children].forEach(slot=>{
       slot.onclick = ()=>{
