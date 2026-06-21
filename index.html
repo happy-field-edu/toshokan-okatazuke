@@ -8,7 +8,7 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body {
     height:100%;
-    font-family:"Hiragino Maru Gothic ProN","Rounded Mplus 1c","Segoe UI",sans-serif;
+    font-family:"BIZ UDPGothic","UD デジタル教科書体 NK-R","Hiragino Maru Gothic ProN","Rounded Mplus 1c","Segoe UI",sans-serif;
     background:linear-gradient(160deg,#fde9c4,#fff7e6);
     color:#5a3a1a;
     overflow:hidden;
@@ -16,6 +16,19 @@
     touch-action:manipulation;
   }
   ruby rt { font-size:.55em; }
+
+  /* ===== ユニバーサルデザイン：文節（スペース）で折り返す ===== */
+  /* 分かち書きの スペースだけで かいぎょうし、文節の とちゅうでは きらない */
+  .instruct, .instruct .small, .shelf-hint, #orderHint,
+  .tray .lead, .book-title, #fx,
+  .panel h1, .rules, .panel p, #clear h2, #clear p,
+  .zone, .zone small, .shelfArea {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+  /* 2ぎょう いじょうの 見出しは バランスよく わける */
+  .instruct, .shelf-hint, #fx, .panel h1, #clear h2 { text-wrap: balance; }
 
   #app {
     position:relative;
