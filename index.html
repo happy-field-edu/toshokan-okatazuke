@@ -4,16 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>としょかん おかたづけ マスター！</title>
-<meta name="description" content="本を ただしい おうちに かえそう。図書館の本の かえし方を あそびながら 学べる 学習アプリ。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="としょかん おかたづけ マスター！">
-<meta property="og:description" content="本を ただしい おうちに かえそう。図書館の本の かえし方を あそびながら 学べる 学習アプリ。">
-<meta property="og:image" content="https://happy-field-edu.github.io/toshokan-okatazuke/cover.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://happy-field-edu.github.io/toshokan-okatazuke/">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="cover.png">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body {
@@ -337,12 +327,27 @@
   #start {
     position:absolute; inset:0; z-index:320; display:flex;
     flex-direction:column; align-items:center; justify-content:center; text-align:center;
-    background:rgba(90,58,26,.85); padding:20px;
+    gap:16px; background:#f7ead0; padding:16px;
   }
   #start.hide { display:none; }
+  .cover-img {
+    width:100%; max-width:760px; max-height:68%; object-fit:contain;
+    border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,.18);
+  }
+  .start-btns { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .how-btn {
+    background:#fff; border:3px solid #e89a2c; color:#d35400;
+    border-radius:14px; padding:8px 22px; font-size:16px; font-weight:bold; cursor:pointer;
+  }
+  .how-btn:active { transform:translateY(2px); }
+  .rules-pop {
+    position:absolute; inset:0; z-index:330; background:rgba(90,58,26,.85);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .rules-pop.hide { display:none; }
   .panel {
     background:#fff8e7; border:5px solid #ffc24d; border-radius:24px;
-    padding:24px 22px 28px; max-width:430px; width:92%;
+    padding:22px 22px 26px; max-width:430px; width:92%;
     box-shadow:0 8px 0 rgba(0,0,0,.2); color:#5a3a1a;
   }
   .panel .emo { font-size:64px; }
@@ -399,15 +404,21 @@
 
   <!-- スタート -->
   <div id="start">
-    <div class="panel">
-      <div class="emo">😺📖</div>
-      <h1>としょかん おかたづけ マスター！</h1>
-      <div class="rules">
-        🔵 <b>ステップ1</b>：ほんの ラベルの ばんごうを みて、<br>マップで おなじ <b>ばんごうの たな</b>を タップ！<br><br>
-        🟢 <b>ステップ2</b>：ほんだなは <b>ひだり→みぎ</b>の じゅんばん。<br>ただしく ならぶ <b>すきま</b>に いれよう！<br><span style="font-size:12px">（あいうえおじゅん・まきすうじゅん・ばんごうじゅん）</span><br><br>
-        まいかい <b>にんきの ほん</b>から 3もん。<br><b>0〜9るい・えほん</b>の いろんな たなから<br>じどうで えらばれるよ（まいかい ちがう）。<br>せいかいすると「ピンポーン！」🔔
+    <img class="cover-img" src="cover.png" alt="としょかん おかたづけ マスター！">
+    <div class="start-btns">
+      <button class="again-btn" id="startBtn">▶ スタート！</button>
+      <button class="how-btn" id="howBtn">？ あそびかた</button>
+    </div>
+    <div class="rules-pop hide" id="rulesPop">
+      <div class="panel">
+        <h1>あそびかた</h1>
+        <div class="rules">
+          🔵 <b>ステップ1</b>：ほんの ラベルの ばんごうを みて、<br>マップで おなじ <b>ばんごうの たな</b>を タップ！<br><br>
+          🟢 <b>ステップ2</b>：ほんだなは <b>ひだり→みぎ</b>の じゅんばん。<br>ただしく ならぶ <b>すきま</b>に いれよう！<br><span style="font-size:12px">（あいうえおじゅん・まきすうじゅん・ばんごうじゅん）</span><br><br>
+          まいかい <b>にんきの ほん</b>から 3もん。<br><b>0〜9るい・えほん</b>の いろんな たなから<br>じどうで えらばれるよ（まいかい ちがう）。<br>せいかいすると「ピンポーン！」🔔
+        </div>
+        <button class="again-btn" id="howClose">とじる</button>
       </div>
-      <button class="again-btn" id="startBtn">スタート！</button>
     </div>
   </div>
 </div>
@@ -1115,6 +1126,8 @@
   buildMap();
   $("startBtn").addEventListener("click", startGame);
   $("againBtn").addEventListener("click", startGame);
+  $("howBtn").addEventListener("click", ()=> $("rulesPop").classList.remove("hide"));
+  $("howClose").addEventListener("click", ()=> $("rulesPop").classList.add("hide"));
 })();
 </script>
 </body>
