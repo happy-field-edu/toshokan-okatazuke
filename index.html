@@ -468,17 +468,22 @@
   // id … #area-9rui など。せんせいは ↓の x/y/w/h（%）を かえて、map.jpg の たなの いちに あわせてください。
   // key … せいかいの ぶんるい（9/E/4/3/7/8/5/6/2/1/0）。おなじ key を ふくすう おいてもOK。
   const AREAS = [
-    { id:"area-9rui", key:"9", c:C.red, label:"9", x:15.5, y:4,  w:40, h:10 },
-    { id:"area-ehon", key:"E", c:C.Ebr, label:"E", x:55,   y:4,  w:18, h:11 },
-    { id:"area-8rui", key:"8", c:C.pur, label:"8", x:1.5,  y:16, w:11, h:11 },
-    { id:"area-7rui", key:"7", c:C.grn, label:"7", x:1.5,  y:28, w:11, h:12 },
-    { id:"area-6rui", key:"6", c:C.gry, label:"6", x:1.5,  y:40, w:11, h:11 },
-    { id:"area-5rui", key:"5", c:C.yel, label:"5", x:1.5,  y:52, w:11, h:14 },
-    { id:"area-4rui", key:"4", c:C.br4, label:"4", x:1.5,  y:78, w:11, h:15 },
-    { id:"area-3rui", key:"3", c:C.blu, label:"3", x:15.5, y:87, w:30, h:9 },
-    { id:"area-2rui", key:"2", c:C.org, label:"2", x:46,   y:87, w:24, h:9 },
-    { id:"area-1rui", key:"1", c:C.lbl, label:"1", x:71,   y:74, w:7,  h:8 },
-    { id:"area-0rui", key:"0", c:C.lbl, label:"0", x:71,   y:65, w:7,  h:8 }
+    // 9るい は ちずの なかで ふくすう ばしょに ある（ぜんぶ タップでOK）
+    { id:"area-9-top",     key:"9", c:C.red, label:"9", x:15,   y:4,    w:40,  h:10 },
+    { id:"area-9-left",    key:"9", c:C.red, label:"9", x:1.5,  y:4,    w:11,  h:10 },
+    { id:"area-9-row2",    key:"9", c:C.red, label:"9", x:15,   y:16,   w:31,  h:11.5 },
+    { id:"area-9-gaikoku", key:"9", c:C.red, label:"9", x:52.5, y:22.5, w:17.5,h:5.5 },
+    { id:"area-9-bunko",   key:"9", c:C.red, label:"9", x:81,   y:67,   w:13.5,h:19 },
+    { id:"area-ehon",      key:"E", c:C.Ebr, label:"E", x:55,   y:4,    w:18,  h:11 },
+    { id:"area-8rui",      key:"8", c:C.pur, label:"8", x:1.5,  y:15,   w:11,  h:11 },
+    { id:"area-7rui",      key:"7", c:C.grn, label:"7", x:1.5,  y:27,   w:11,  h:11 },
+    { id:"area-6rui",      key:"6", c:C.gry, label:"6", x:1.5,  y:39,   w:11,  h:10 },
+    { id:"area-5rui",      key:"5", c:C.yel, label:"5", x:1.5,  y:50,   w:11,  h:15 },
+    { id:"area-4rui",      key:"4", c:C.br4, label:"4", x:1.5,  y:73,   w:11,  h:16 },
+    { id:"area-3rui",      key:"3", c:C.blu, label:"3", x:15,   y:88,   w:31,  h:10 },
+    { id:"area-2rui",      key:"2", c:C.org, label:"2", x:46,   y:88,   w:24,  h:10 },
+    { id:"area-1rui",      key:"1", c:C.lbl, label:"1", x:70,   y:79,   w:7.5, h:8 },
+    { id:"area-0rui",      key:"0", c:C.lbl, label:"0", x:70,   y:71,   w:7.5, h:8 }
   ];
 
   // ===== ほんの データベース（じっさいの にんきぼん・ひらがな）=====
