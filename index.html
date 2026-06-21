@@ -68,20 +68,37 @@
     flex:0 1 auto;
     align-self:center;
     width:97%;
-    max-width:740px;
-    aspect-ratio:7 / 5;
+    max-width:860px;
+    aspect-ratio:1.416 / 1;       /* map.jpg（よこなが）の ひりつに あわせる。ちがう がぞうなら ここを かえる */
     max-height:66vh;
     position:relative;
     margin:6px auto;
-    border-radius:18px;
-    background:
-      repeating-linear-gradient(0deg,transparent,transparent 36px,rgba(0,0,0,.03) 36px,rgba(0,0,0,.03) 38px),
-      repeating-linear-gradient(90deg,transparent,transparent 36px,rgba(0,0,0,.03) 36px,rgba(0,0,0,.03) 38px),
-      #fffdf5;
+    border-radius:14px;
+    /* ▼ じっさいの としょかんの ちず（おなじ フォルダに map.jpg を おく） */
+    background:#fff url('./map.jpg') center / 100% 100% no-repeat;
     border:4px solid #e8c98a;
     box-shadow:inset 0 0 0 3px #fff;
     overflow:hidden;
   }
+  /* ===== タップできる あたりはんてい（map.jpg の うえに かさねる）=====
+     せんせいへ：JS の AREAS で x/y/w/h（%）を かえて、たなの いちに あわせてください。 */
+  .area {
+    position:absolute; box-sizing:border-box;
+    border:3px solid transparent; border-radius:12px;
+    background:transparent; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .12s, box-shadow .12s, transform .1s;
+  }
+  .area .area-label {
+    font-size:18px; font-weight:bold; color:#fff;
+    background:var(--area-color,#888); border-radius:8px; padding:2px 9px;
+    opacity:.5; text-shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  .area:hover, .area:focus { background:rgba(255,224,120,.4); box-shadow:0 0 0 3px #fff, 0 0 16px 5px gold; outline:none; }
+  .area:hover .area-label, .area:focus .area-label { opacity:1; }
+  .area:active { transform:scale(.97); }
+  .area.right { animation:glow .6s; z-index:6; }
+  .area.wrong { animation:shake .4s; }
   .map-title {
     position:absolute; top:8px; left:0; right:0; text-align:center;
     font-size:13px; color:#b08a4a; font-weight:bold;
@@ -202,31 +219,32 @@
     box-shadow:inset 0 -6px 0 rgba(0,0,0,.25);
   }
   .spine {
-    flex:1 1 0; min-width:0; max-width:72px; height:162px;
+    flex:1 1 0; min-width:0; max-width:82px; height:176px;
     box-sizing:border-box;
     border-radius:6px 6px 3px 3px;
     border:3px solid rgba(0,0,0,.2);
     box-shadow:inset -4px 0 6px rgba(0,0,0,.15), inset 4px 0 4px rgba(255,255,255,.25);
     display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-    padding:7px 1px 4px;
+    padding:7px 1px 5px;
     position:relative;
   }
   .spine .title {
     writing-mode:vertical-rl; text-orientation:upright;
-    font-weight:bold; font-size:11px; line-height:1.0;
+    font-weight:bold; font-size:12px; line-height:1.0;
     flex:1; display:flex; align-items:center; justify-content:center;
     text-shadow:0 1px 1px rgba(0,0,0,.25);
     overflow:hidden;
   }
+  /* せいきゅうきごう ラベル：はくしょく＋こいもじで「ここを 見る」を きょうちょう */
   .clabel {
-    width:100%; max-width:54px; background:#fff; border:1.5px solid #888; border-radius:3px;
-    font-size:9px; letter-spacing:-.5px; color:#222; text-shadow:none; line-height:1.22; text-align:center;
-    overflow:hidden;
+    width:100%; max-width:66px; background:#fff; border:2px solid #555; border-radius:4px;
+    font-size:12px; color:#111; text-shadow:none; line-height:1.3; text-align:center;
+    overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.2);
   }
-  .clabel div { border-bottom:1px solid #ccc; }
+  .clabel div { border-bottom:1.5px solid #bbb; padding:1px 0; }
   .clabel div:last-child { border-bottom:none; }
-  /* くらべる だん（だくてんを みやすく おおきめに・1ぎょうで） */
-  .clabel .key { font-weight:bold; color:#c0392b; font-size:12px; letter-spacing:-1px; padding:1px 0; white-space:nowrap; }
+  /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
+  .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
   /* あきスペース（ほかの たなと おなじ「光る わく」に みせる。あきは いくつか ある） */
   .slot-empty {
     flex:1 1 0; min-width:0; max-width:72px; height:162px;
@@ -245,6 +263,17 @@
     50%     { box-shadow:0 0 0 3px #fff, 0 0 16px 5px rgba(255,200,40,.85); }
   }
   .drop-glow.over { animation:none; box-shadow:0 0 0 4px #fff, 0 0 22px 8px gold; transform:scale(1.06); }
+
+  /* ドラッグ／ひろった しゅんかんから、あきスペースを つよく 点めつ（ここに いれてね！） */
+  #slots.drophint .slot-empty {
+    border:4px solid #ff9800;
+    animation:dropBlink .55s ease-in-out infinite;
+  }
+  @keyframes dropBlink {
+    0%,100% { border-color:#ff9800; box-shadow:0 0 0 2px #ffd54f, 0 0 12px 3px rgba(255,152,0,.55); transform:scale(1); }
+    50%     { border-color:#ffc107; box-shadow:0 0 0 5px #fff, 0 0 24px 9px rgba(255,193,7,.95); transform:scale(1.06); }
+  }
+  #slots.drophint .slot-empty.over { animation:none; border-color:#ff7a00; box-shadow:0 0 0 5px #fff, 0 0 26px 10px gold; transform:scale(1.09); }
 
   /* ===== ターゲットの ほん（フェーズ1ひょうじ＆フェーズ2ドラッグ） ===== */
   .tray {
@@ -267,14 +296,14 @@
   .book-info { display:flex; align-items:center; gap:12px; }
   .book-title { font-size:18px; font-weight:bold; color:#5a3a1a; }
   .big-label {
-    width:58px; background:#fff; border:2px solid #555; border-radius:5px;
-    text-align:center; font-weight:bold; color:#222; line-height:1.35; font-size:15px;
-    box-shadow:0 2px 3px rgba(0,0,0,.15);
+    width:72px; background:#fff; border:3px solid #333; border-radius:6px;
+    text-align:center; font-weight:bold; color:#111; line-height:1.35; font-size:19px;
+    box-shadow:0 2px 4px rgba(0,0,0,.2);
   }
-  .big-label div { border-bottom:1.5px solid #bbb; padding:1px 0; }
+  .big-label div { border-bottom:1.5px solid #bbb; padding:2px 0; }
   .big-label div:last-child { border-bottom:none; }
-  /* くらべる だん（だくてんを みやすく おおきめに・1ぎょうで） */
-  .big-label .key { font-size:19px; color:#c0392b; white-space:nowrap; letter-spacing:-1px; }
+  /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
+  .big-label .key { font-size:27px; color:#c0392b; white-space:nowrap; letter-spacing:-1px; padding:3px 0; }
   .big-label .cap { font-size:9px; color:#999; }
 
   /* ドラッグできる ほん（フェーズ2） */
@@ -435,65 +464,21 @@
     lbl:"#aad6f0", tan:"#ddb878", pK:"#9b59b6", cnt:"#8a5a2c", wht:"#ffffff", grnBox:"#bfe3a8"
   };
 
-  // ===== ほんものの ちずを さいげん（うえから みた としょかん）=====
-  // t:"s"=タップできる たな（key=せいかいの ぶんるい）, "f"=かぐ, "n"=もじだけ
-  const ZONES = [
-    // ── ひだりの たてならび（9→4るい）──
-    { t:"s", key:"9", c:C.red, x:1,  y:3,    w:10, h:12.5, fs:10, label:"9るい<br><small>にほんの おはなし</small>" },
-    { t:"s", key:"8", c:C.pur, x:1,  y:16,   w:10, h:12.5, fs:10, label:"8るい<br><small>ことば</small>" },
-    { t:"s", key:"7", c:C.grn, x:1,  y:29,   w:10, h:12.5, fs:9,  label:"7るい<br><small>げいじゅつ・スポーツ</small>" },
-    { t:"s", key:"6", c:C.gry, x:1,  y:42,   w:10, h:11,   fs:9,  label:"6るい<br><small>さんぎょう・えんげい</small>" },
-    { t:"s", key:"5", c:C.yel, dark:1, x:1,  y:53.5, w:10, h:15, fs:9,  label:"5るい<br><small>ぎじゅつ・かていか</small>" },
-    { t:"s", key:"4", c:C.br4, x:1,  y:69,   w:10, h:17,   fs:10, label:"4るい<br><small>さんすう・りか</small>" },
-
-    // ── うえの ならび ──
-    { t:"s", key:"9", c:C.red, x:13, y:3,   w:41, h:11, fs:12, label:"9るい にほんの おはなし<br><small>かいたひとの あいうえおじゅん</small>" },
-    { t:"s", key:"E", c:C.Ebr, x:55, y:3,   w:17, h:11, fs:11, label:"E えほん<br><small>なまえの あいうえおじゅん</small>" },
-    { t:"f", c:C.pnk, dark:1, x:73, y:2.5, w:7,  h:11.5, fs:9, label:"あたらしい<br>ほん" },
-    { t:"f", c:C.lbl, dark:1, x:83.5, y:2.5, w:11, h:7.5, fs:9, label:"🚰 てあらい" },
-    { t:"n", dark:1, x:87, y:11, w:12, h:7, fs:10, label:"➡️ でいりぐち" },
-
-    // ── 2だんめ ──
-    { t:"s", key:"9", c:C.red, x:13, y:15.5, w:25, h:5.5, fs:8.5, label:"9るい にほんの おはなし" },
-    { t:"s", key:"9", c:C.red, x:13, y:21.5, w:25, h:5.5, fs:8.5, label:"9るい がいこくの おはなし" },
-    { t:"f", c:C.gry, dark:1, vert:1, x:39, y:15.5, w:5, h:11.5, fs:8, label:"でんし こくばん" },
-    { t:"s", key:"E", c:C.Ebr, x:51, y:15.5, w:17, h:5.5, fs:7.5, label:"E むかしばなし・えいごの えほん" },
-    { t:"s", key:"9", c:C.red, x:51, y:21.5, w:17, h:5.5, fs:8, label:"9るい がいこくの おはなし" },
-    { t:"f", c:C.gry, dark:1, vert:1, x:68.5, y:15.5, w:4.5, h:11.5, fs:8, label:"しんぶん" },
-    { t:"s", key:"E", c:C.Ebr, round:1, x:75, y:14.5, w:10, h:13, fs:10, label:"E<br>えほん" },
-
-    // ── みぎがわ（てんじ・カウンター）──
-    { t:"f", c:C.Ebr, wt:1, x:84, y:27.5, w:10, h:8, fs:8, label:"てんじ コーナー" },
-    { t:"f", c:C.cnt, wt:1, vert:1, x:80, y:37, w:8, h:23, fs:9, label:"カウンター" },
-    { t:"n", dark:1, x:88.5, y:38, w:11, h:21, fs:7, label:"※カウンターの なかは おしごとの ばしょ。はいりません" },
-
-    // ── ちゅうおう（ちず・つくえ・マット）──
-    { t:"f", c:C.grnBox, dark:1, x:23, y:31, w:37, h:29, fs:11, label:"わたしたちの<br>としょかんの ちず<br>📗✨<br><small>ほんの ばしょを おぼえてね</small>" },
-    { t:"f", c:C.wht, dark:1, x:12.5, y:31,   w:9.5, h:11, fs:9, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, x:12.5, y:43.5, w:9.5, h:11, fs:9, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, x:12.5, y:56,   w:9.5, h:11, fs:9, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, x:63, y:38, w:10, h:10, fs:9, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, round:1, x:63, y:50, w:10, h:10, fs:9, label:"つくえ" },
-    { t:"n", dark:1, x:23, y:61, w:30, h:4.5, fs:8, label:"⬆️ マット（うわぐつを ぬいで すわってね）" },
-    { t:"f", c:C.wht, dark:1, x:26, y:72, w:11, h:11, fs:9, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, round:1, x:38.5, y:73, w:7, h:10, fs:8, label:"つくえ" },
-    { t:"f", c:C.wht, dark:1, x:47, y:72, w:11, h:11, fs:9, label:"つくえ" },
-
-    // ── みぎした（ひゃっか・ずかん・ぶんこ）──
-    { t:"n", dark:1, x:61, y:62, w:16, h:4, fs:8, label:"ひゃっかじてん" },
-    { t:"n", dark:1, x:59.5, y:67, w:6, h:4, fs:8, label:"0るい▶" },
-    { t:"n", dark:1, x:59.5, y:78, w:6, h:4, fs:8, label:"1るい▶" },
-    { t:"s", key:"0", c:C.lbl, dark:1, x:65.5, y:66.5, w:5.5, h:10, fs:8, label:"0るい<br>しらべる" },
-    { t:"s", key:"1", c:C.lbl, dark:1, x:65.5, y:77,   w:5.5, h:9,  fs:8, label:"1るい<br>いきかた" },
-    { t:"f", c:C.tan, dark:1, vert:1, x:71.5, y:66.5, w:6, h:19, fs:9, label:"ずかん" },
-    { t:"s", key:"9", c:C.red, vert:1, x:78,   y:63.5, w:7.5, h:22, fs:7, label:"9るい ぶんこ" },
-    { t:"s", key:"9", c:C.red, vert:1, x:86.5, y:63.5, w:7.5, h:22, fs:7, label:"9るい ぶんこ きょうど" },
-
-    // ── したの ならび ──
-    { t:"s", key:"3", c:C.blu, x:6,  y:88.5, w:33, h:9.5, fs:11, label:"3るい しゃかい・くらし" },
-    { t:"s", key:"2", c:C.org, x:39, y:88.5, w:29, h:9.5, fs:10, label:"2るい れきし・ちり・でんき" },
-    { t:"f", c:C.lbl, dark:1, x:68, y:88.5, w:15, h:9.5, fs:9, label:"せんそう・へいわの ほん" },
-    { t:"s", key:"K", c:C.pK,  x:83, y:88.5, w:14, h:9.5, fs:9, label:"こくごじてん・かんじじてん" }
+  // ===== タップできる あたりはんてい（map.jpg の うえに かさねる）=====
+  // id … #area-9rui など。せんせいは ↓の x/y/w/h（%）を かえて、map.jpg の たなの いちに あわせてください。
+  // key … せいかいの ぶんるい（9/E/4/3/7/8/5/6/2/1/0）。おなじ key を ふくすう おいてもOK。
+  const AREAS = [
+    { id:"area-9rui", key:"9", c:C.red, label:"9", x:15.5, y:4,  w:40, h:10 },
+    { id:"area-ehon", key:"E", c:C.Ebr, label:"E", x:55,   y:4,  w:18, h:11 },
+    { id:"area-8rui", key:"8", c:C.pur, label:"8", x:1.5,  y:16, w:11, h:11 },
+    { id:"area-7rui", key:"7", c:C.grn, label:"7", x:1.5,  y:28, w:11, h:12 },
+    { id:"area-6rui", key:"6", c:C.gry, label:"6", x:1.5,  y:40, w:11, h:11 },
+    { id:"area-5rui", key:"5", c:C.yel, label:"5", x:1.5,  y:52, w:11, h:14 },
+    { id:"area-4rui", key:"4", c:C.br4, label:"4", x:1.5,  y:78, w:11, h:15 },
+    { id:"area-3rui", key:"3", c:C.blu, label:"3", x:15.5, y:87, w:30, h:9 },
+    { id:"area-2rui", key:"2", c:C.org, label:"2", x:46,   y:87, w:24, h:9 },
+    { id:"area-1rui", key:"1", c:C.lbl, label:"1", x:71,   y:74, w:7,  h:8 },
+    { id:"area-0rui", key:"0", c:C.lbl, label:"0", x:71,   y:65, w:7,  h:8 }
   ];
 
   // ===== ほんの データベース（じっさいの にんきぼん・ひらがな）=====
@@ -825,19 +810,15 @@
   // ===== マップを つくる =====
   function buildMap(){
     const map = $("map");
-    ZONES.forEach(z=>{
+    AREAS.forEach(a=>{
       const el=document.createElement("div");
-      let cls="zone "+(z.t||"f");
-      if(z.dark) cls+=" dark";
-      if(z.wt)   cls+=" wt";
-      if(z.vert) cls+=" vert";
-      if(z.round)cls+=" round";
-      el.className=cls;
-      el.style.left=z.x+"%"; el.style.top=z.y+"%"; el.style.width=z.w+"%"; el.style.height=z.h+"%";
-      if(z.c) el.style.background=z.c;
-      if(z.fs) el.style.fontSize=z.fs+"px";
-      el.innerHTML=z.label||"";
-      if(z.t==="s"){ el.dataset.key=z.key; el.addEventListener("click", ()=>onShelfTap(z.key, el)); }
+      el.className="area";
+      el.id=a.id;
+      el.dataset.key=a.key;
+      el.style.left=a.x+"%"; el.style.top=a.y+"%"; el.style.width=a.w+"%"; el.style.height=a.h+"%";
+      el.style.setProperty("--area-color", a.c);
+      el.innerHTML='<span class="area-label">'+a.label+'</span>';
+      el.addEventListener("click", ()=>onShelfTap(a.key, el));
       map.appendChild(el);
     });
   }
@@ -894,6 +875,7 @@
     $("shelfHint").textContent = "📏 ひだり→みぎ：" + HINT[q.mode][0];
     $("orderHint").textContent = "（" + HINT[q.mode][1] + "）";
     const slotsEl = $("slots");
+    slotsEl.classList.remove("drophint");
     slotsEl.innerHTML = "";
     curSlots.forEach((sl, i)=>{
       let el;
@@ -936,6 +918,7 @@
       if(solved) return;
       e.preventDefault();
       resetDragVisual();          // まえの ドラッグが のこっていても リセット
+      $("slots").classList.add("drophint");   // ふれた しゅんかんから あきスペースを 点めつ
       const r = db.getBoundingClientRect();
       drag = {
         id:e.pointerId,
@@ -944,8 +927,8 @@
         w:r.width, h:r.height,
         startX:e.clientX, startY:e.clientY,
         moved:false, home:{left:r.left, top:r.top},
-        // タッチは ゆびで ラベルが かくれないよう うえに もちあげる
-        lift: (e.pointerType==="touch") ? 72 : 0
+        // タッチは ゆびで ラベルが かくれないよう うえに もちあげる（-80px）
+        lift: (e.pointerType==="touch") ? 80 : 0
       };
       db.setPointerCapture(e.pointerId);
     };
@@ -976,10 +959,12 @@
       } else {
         db.classList.toggle("picked");   // タップ：ひろう／おく
       }
+      // ドラッグちゅう or ひろっている あいだは 点めつを つづける
+      $("slots").classList.toggle("drophint", db.classList.contains("picked"));
     };
     // タッチが とちゅうで きれても、本が フリーズしないように もどす
-    db.onpointercancel = ()=>{ drag=null; resetDragVisual(); };
-    db.onlostpointercapture = ()=>{ if(drag){ drag=null; resetDragVisual(); } };
+    db.onpointercancel = ()=>{ drag=null; resetDragVisual(); $("slots").classList.toggle("drophint", db.classList.contains("picked")); };
+    db.onlostpointercapture = ()=>{ if(drag){ drag=null; resetDragVisual(); $("slots").classList.toggle("drophint", db.classList.contains("picked")); } };
     // タップでひろった後、たなを タップして いれる
     [...$("slots").children].forEach(slot=>{
       slot.onclick = ()=>{
@@ -1042,6 +1027,7 @@
     const keyLine = KEYLINE[q.mode];
     const db = $("dragBook");
     db.classList.remove("picked");
+    $("slots").classList.remove("drophint");
     // あきスペースに 背表紙を いれる
     curSlots[idx] = Object.assign({ title:q.titleHtml }, q.label);
     slot.className="spine";
