@@ -583,14 +583,14 @@
         { t:"さんすうの ほん", a:"さ", ndc:"41" },
         { t:"ちきゅうと うちゅう", a:"ち", ndc:"45" },
         { t:"しょくぶつ ずかん", a:"し", ndc:"47" },
-        { t:"どうぶつ ずかん", a:"ど", ndc:"48" }
+        { t:"どうぶつ ずかん", a:"ど", ndc:"489" }
       ],
       "5": [
         { t:"いえの ほん", a:"い", ndc:"52" },
         { t:"のりものの ほん", a:"の", ndc:"53" },
         { t:"でんきの しくみ", a:"で", ndc:"54" },
         { t:"つくる ほん", a:"つ", ndc:"58" },
-        { t:"りょうりの ほん", a:"り", ndc:"59" }
+        { t:"りょうりの ほん", a:"り", ndc:"596" }
       ],
       "6": [
         { t:"のうぎょうの ほん", a:"の", ndc:"61" },
@@ -639,8 +639,23 @@
     volume:["まきすう（かんすう）の じゅん", "1→2→3→4… の じゅん"],
     class :["ぶんるいばんごうの じゅん", "ちいさい ばんごう→おおきい ばんごう"]
   };
-  function keyOf(mode, o){ return mode==="author" ? o.mid : Number(mode==="volume" ? o.bot : o.top); }
-  function cmpKey(mode, x, y){ return mode==="author" ? kanaCmp(x,y) : (x - y); }
+  function keyOf(mode, o){
+    if(mode==="author") return o.mid;
+    if(mode==="volume") return Number(o.bot);
+    return String(o.top);                       // class：ぶんるい番号は 文字列（3桁混在に たいおう）
+  }
+  // ぶんるい番号の じゅん：1けたずつ くらべる（91 < 913 < 92 のように ただしく ならぶ）
+  function ndcCmp(a, b){
+    a=String(a); b=String(b);
+    const n=Math.min(a.length, b.length);
+    for(let i=0;i<n;i++){ if(a[i]!==b[i]) return a.charCodeAt(i)-b.charCodeAt(i); }
+    return a.length - b.length;                 // みじかい ほうが まえ（91 は 913 より まえ）
+  }
+  function cmpKey(mode, x, y){
+    if(mode==="author") return kanaCmp(x,y);
+    if(mode==="volume") return x - y;
+    return ndcCmp(x, y);                         // class
+  }
 
   // ===== もんだい じどうせいせい =====
   const randInt = (a,b) => a + Math.floor(Math.random()*(b-a+1));
@@ -680,7 +695,7 @@
   function buildClassShelf(shelf){
     const seen={}, list=[];
     for(const b of BOOKS.cls[shelf]){ if(!seen[b.ndc]){ seen[b.ndc]=1; list.push({top:b.ndc, mid:b.a, bot:"-", title:b.t}); } }
-    list.sort((x,y)=>Number(x.top)-Number(y.top));
+    list.sort((x,y)=>ndcCmp(x.top,y.top));
     const W=Math.min(6,list.length), st=randInt(0,list.length-W), win=list.slice(st,st+W);
     const {ti,di}=chooseTiDi(W);
     return assemble("class", win, ti, di);
