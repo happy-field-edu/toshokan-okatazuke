@@ -245,6 +245,8 @@
   .clabel div:last-child { border-bottom:none; }
   /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
   .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
+  /* ぶんるい番号の のこりの数字（実物の背ラベルふう：小さく 右上に） */
+  .clabel sup.ndcsub, .big-label sup.ndcsub { font-size:.55em; font-weight:bold; }
   /* あきスペース（ほかの たなと おなじ「光る わく」に みせる。あきは いくつか ある） */
   .slot-empty {
     flex:1 1 0; min-width:0; max-width:72px; height:162px;
@@ -770,15 +772,21 @@
 
   // ===== ラベル HTML（keyLine の だんを あかく めだたせる）=====
   function kcls(line, keyLine){ return line===keyLine ? ' class="key"' : ''; }
+  // ぶんるい番号は 実物の 背ラベルふうに「さいしょの数字を 大きく＋のこりを 小さく」
+  function formatNdc(top){
+    const t=String(top);
+    if(t.length<=1) return t;                       // "E" など 1もじは そのまま
+    return t[0] + '<sup class="ndcsub">' + t.slice(1) + '</sup>';
+  }
   function bigLabelHtml(o, keyLine){
     return `<div class="big-label">
-      <div${kcls("top",keyLine)}>${o.top}</div>
+      <div${kcls("top",keyLine)}>${formatNdc(o.top)}</div>
       <div${kcls("mid",keyLine)}>${o.mid}</div>
       <div${kcls("bot",keyLine)}>${o.bot}</div>
     </div>`;
   }
   function cLabelHtml(o, keyLine){
-    return `<div class="clabel"><div${kcls("top",keyLine)}>${o.top}</div><div${kcls("mid",keyLine)}>${o.mid}</div><div${kcls("bot",keyLine)}>${o.bot}</div></div>`;
+    return `<div class="clabel"><div${kcls("top",keyLine)}>${formatNdc(o.top)}</div><div${kcls("mid",keyLine)}>${o.mid}</div><div${kcls("bot",keyLine)}>${o.bot}</div></div>`;
   }
 
   // ===== フェーズ1 ひょうじ =====
