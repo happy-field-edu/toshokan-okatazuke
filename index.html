@@ -245,8 +245,17 @@
   .clabel div:last-child { border-bottom:none; }
   /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
   .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
-  /* ぶんるい番号の のこりの数字（実物の背ラベルふう：小さく 右上に） */
-  .clabel sup.ndcsub, .big-label sup.ndcsub { font-size:.55em; font-weight:bold; }
+  /* ===== 背ラベル（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻） ===== */
+  .lbl { display:inline-flex; align-items:stretch; background:#fff; border:2px solid #555; border-radius:4px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.2); max-width:100%; }
+  .lbl-c1 { display:flex; align-items:center; justify-content:center; font-weight:bold; color:#111; font-size:23px; padding:0 4px; border-right:1.5px solid #bbb; line-height:1; }
+  .lbl-c2 { display:flex; flex-direction:column; min-width:0; }
+  .lbl-c2 > div { border-bottom:1px solid #ccc; padding:1px 4px; font-size:11px; font-weight:bold; color:#111; line-height:1.25; text-align:center; min-width:18px; white-space:nowrap; }
+  .lbl-c2 > div:last-child { border-bottom:none; }
+  .lbl-rest:empty { min-height:9px; }
+  .lbl .key { color:#c0392b; }
+  /* おおきい ラベル（ターゲットの本） */
+  .lbl-big .lbl-c1 { font-size:42px; padding:0 10px; }
+  .lbl-big .lbl-c2 > div { font-size:17px; padding:2px 10px; min-width:30px; }
   /* あきスペース（ほかの たなと おなじ「光る わく」に みせる。あきは いくつか ある） */
   .slot-empty {
     flex:1 1 0; min-width:0; max-width:72px; height:162px;
@@ -785,24 +794,28 @@
     });
   }
 
-  // ===== ラベル HTML（keyLine の だんを あかく めだたせる）=====
-  function kcls(line, keyLine){ return line===keyLine ? ' class="key"' : ''; }
-  // ぶんるい番号は 実物の 背ラベルふうに「さいしょの数字を 大きく＋のこりを 小さく」
-  function formatNdc(top){
+  // ===== 背ラベル HTML（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻）=====
+  // keyLine … "top":番号 / "mid":著者 / "bot":巻 を あかく めだたせる
+  function ndcParts(top){
     const t=String(top);
-    if(t.length<=1) return t;                       // "E" など 1もじは そのまま
-    return t[0] + '<sup class="ndcsub">' + t.slice(1) + '</sup>';
+    if(t==="E" || t.length<=1) return { big:t, rest:"" };   // E など 1もじは そのまま
+    return { big:t[0], rest:t.slice(1) };                   // 例 596 → 大「5」＋小「96」
   }
-  function bigLabelHtml(o, keyLine){
-    return `<div class="big-label">
-      <div${kcls("top",keyLine)}>${formatNdc(o.top)}</div>
-      <div${kcls("mid",keyLine)}>${o.mid}</div>
-      <div${kcls("bot",keyLine)}>${o.bot}</div>
-    </div>`;
+  function labelHtml(o, keyLine, big){
+    const p=ndcParts(o.top);
+    const numKey = keyLine==="top" ? " key" : "";
+    const auKey  = keyLine==="mid" ? " key" : "";
+    const volKey = keyLine==="bot" ? " key" : "";
+    return `<div class="lbl${big?' lbl-big':''}">`
+      + `<div class="lbl-c1${numKey}">${p.big}</div>`
+      + `<div class="lbl-c2">`
+      +   `<div class="lbl-rest${numKey}">${p.rest}</div>`
+      +   `<div class="lbl-au${auKey}">${o.mid}</div>`
+      +   `<div class="lbl-vol${volKey}">${o.bot}</div>`
+      + `</div></div>`;
   }
-  function cLabelHtml(o, keyLine){
-    return `<div class="clabel"><div${kcls("top",keyLine)}>${formatNdc(o.top)}</div><div${kcls("mid",keyLine)}>${o.mid}</div><div${kcls("bot",keyLine)}>${o.bot}</div></div>`;
-  }
+  function bigLabelHtml(o, keyLine){ return labelHtml(o, keyLine, true); }
+  function cLabelHtml(o, keyLine){ return labelHtml(o, keyLine, false); }
 
   // ===== フェーズ1 ひょうじ =====
   function showPhase1(){
