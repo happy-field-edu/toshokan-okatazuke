@@ -247,14 +247,14 @@
   .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
   /* ===== 背ラベル（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻） ===== */
   .lbl { display:inline-flex; align-items:stretch; background:#fff; border:2px solid #555; border-radius:4px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.2); max-width:100%; }
-  .lbl-c1 { display:flex; align-items:center; justify-content:center; font-weight:bold; color:#111; font-size:23px; padding:0 1px; border-right:1.5px solid #bbb; line-height:1; }
+  .lbl-c1 { display:flex; align-items:center; justify-content:center; font-weight:bold; color:#111; font-size:23px; padding:0; min-width:16px; border-right:1.5px solid #bbb; line-height:1; }
   .lbl-c2 { display:flex; flex-direction:column; min-width:0; }
   .lbl-c2 > div { border-bottom:1px solid #ccc; padding:1px 4px; font-size:11px; font-weight:bold; color:#111; line-height:1.25; text-align:center; min-width:18px; white-space:nowrap; }
   .lbl-c2 > div:last-child { border-bottom:none; }
   .lbl-rest:empty { min-height:9px; }
   .lbl .key { color:#c0392b; }
   /* おおきい ラベル（ターゲットの本） */
-  .lbl-big .lbl-c1 { font-size:42px; padding:0 5px; }
+  .lbl-big .lbl-c1 { font-size:42px; padding:0 2px; min-width:30px; }
   .lbl-big .lbl-c2 > div { font-size:17px; padding:2px 10px; min-width:30px; }
   /* あきスペース（ほかの たなと おなじ「光る わく」に みせる。あきは いくつか ある） */
   .slot-empty {
