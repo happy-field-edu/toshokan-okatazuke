@@ -48,6 +48,9 @@
     display:flex; align-items:center; justify-content:space-between;
   }
   header h1 { font-size:18px; color:#9a5a12; line-height:1.2; }
+  .hud-right { display:flex; align-items:center; gap:10px; }
+  .returned { font-size:13px; color:#9a5a12; font-weight:bold; white-space:nowrap; }
+  .returned b { font-size:17px; color:#c0392b; }
   .progress {
     background:#fff; border:3px solid #e89a2c; border-radius:20px;
     padding:3px 12px; font-weight:bold; color:#d35400; font-size:15px; white-space:nowrap;
@@ -403,7 +406,10 @@
 <div id="app">
   <header>
     <h1>📚 としょかん おかたづけ マスター！</h1>
-    <div class="progress" id="progress">1 / 3</div>
+    <div class="hud-right">
+      <span class="returned" id="returned">📖 かえした本 <b>0</b>さつ</span>
+      <div class="progress" id="progress">1 / 3</div>
+    </div>
   </header>
 
   <!-- フェーズ1：マップ -->
@@ -777,6 +783,7 @@
 
   let qIndex = 0;
   let solved = false;   // フェーズ2のほんを いれたか
+  let returnedTotal = 0;   // アプリを ひらいてからの「かえした本」のごうけい（リロードまで つづく）
   let curQ = null, curSlots = null;
 
   // ===== マップを つくる =====
@@ -1005,6 +1012,8 @@
   function placeBook(slot, idx){
     if(solved) return;
     solved = true;
+    returnedTotal++;                       // かえした本の ごうけいを ふやす
+    $("returned").innerHTML = '📖 かえした本 <b>'+returnedTotal+'</b>さつ';
     const q = curQ;
     const keyLine = KEYLINE[q.mode];
     const db = $("dragBook");
