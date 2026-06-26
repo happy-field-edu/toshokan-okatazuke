@@ -249,17 +249,28 @@
   /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
   .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
   /* ===== 背ラベル（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻） ===== */
-  .lbl { display:inline-flex; align-items:stretch; background:#fff; border:1.5px solid #333; border-radius:3px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.18); max-width:100%; }
-  .lbl-c1 { display:flex; align-items:center; justify-content:center; font-weight:bold; color:#111; font-size:30px; padding:0 1px; min-width:20px; border-right:1px solid #333; line-height:.9; }
+  .lbl {
+    --label-color:#333;
+    display:inline-flex; align-items:stretch; background:#fff; border:1.5px solid var(--label-color);
+    border-radius:3px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.18); max-width:100%;
+  }
+  .lbl-c1 {
+    display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--label-color);
+    font-size:30px; padding:0 1px; min-width:20px; border-right:1px solid var(--label-color); line-height:.9;
+  }
   .lbl-c2 { display:flex; flex-direction:column; min-width:0; }
-  .lbl-c2 > div { border-bottom:1px solid #333; padding:0 4px; font-size:12px; font-weight:bold; color:#111; line-height:1.5; text-align:center; min-width:18px; white-space:nowrap; }
+  .lbl-c2 > div {
+    border-bottom:1px solid var(--label-color); padding:0 4px; font-size:12px; font-weight:bold;
+    color:#111; line-height:1.5; text-align:center; min-width:22px; white-space:nowrap;
+  }
   .lbl-c2 > div:last-child { border-bottom:none; }
+  .lbl-rest { color:var(--label-color) !important; }
   .lbl-rest:empty { min-height:14px; }
-  .lbl .key { color:#c0392b; }
+  .lbl .key { background:#fff4b8; box-shadow:inset 0 0 0 2px rgba(255,193,7,.75); }
   /* おおきい ラベル（ターゲットの本） */
   .lbl-big { border-width:2px; }
   .lbl-big .lbl-c1 { font-size:52px; padding:0 3px; min-width:34px; }
-  .lbl-big .lbl-c2 > div { font-size:18px; padding:0 10px; min-width:32px; line-height:1.7; }
+  .lbl-big .lbl-c2 > div { font-size:18px; padding:0 10px; min-width:42px; line-height:1.7; }
   /* あきスペース（ほかの たなと おなじ「光る わく」に みせる。あきは いくつか ある） */
   .slot-empty {
     flex:1 1 0; min-width:0; max-width:72px; height:162px;
@@ -477,9 +488,9 @@
 
   // ===== マップの いろ =====
   const C = {
-    red:"#e8412f", pur:"#8e44ad", grn:"#27ae60", gry:"#9aa3a6", yel:"#f1c40f",
-    br4:"#9c6b3f", Ebr:"#b5752f", blu:"#2e86de", org:"#e67e22", pnk:"#f2a6c4",
-    lbl:"#aad6f0", tan:"#ddb878", pK:"#9b59b6", cnt:"#8a5a2c", wht:"#ffffff", grnBox:"#bfe3a8"
+    red:"#ef1d12", pur:"#9c1bc7", grn:"#25a64a", gry:"#666666", yel:"#f0c400",
+    br4:"#9b5523", Ebr:"#c46b1f", blu:"#1778ff", org:"#f26a21", pnk:"#f2a6c4",
+    lbl:"#333333", tan:"#ddb878", pK:"#9b59b6", cnt:"#8a5a2c", wht:"#ffffff", grnBox:"#bfe3a8"
   };
 
   // ===== タップできる あたりはんてい（map.jpg の うえに かさねる）=====
@@ -639,7 +650,11 @@
   };
 
   // たな の いろ・えもじ（ぶんるいの あたまの すうじ／E ごとに）
-  const COVER = { "E":"#b5752f","9":"#e8412f","8":"#8e44ad","7":"#27ae60","6":"#95a5a6","5":"#f1c40f","4":"#9c6b3f","3":"#2e86de","2":"#e67e22","1":"#5dade2","0":"#16a085" };
+  const LABEL_COLOR = {
+    "E":"#c46b1f", "9":"#ef1d12", "8":"#9c1bc7", "7":"#25a64a", "6":"#666666",
+    "5":"#f0c400", "4":"#9b5523", "3":"#1778ff", "2":"#f26a21", "1":"#333333", "0":"#333333"
+  };
+  const COVER = { "E":"#c46b1f","9":"#ef1d12","8":"#9c1bc7","7":"#25a64a","6":"#666666","5":"#f0c400","4":"#9b5523","3":"#1778ff","2":"#f26a21","1":"#333333","0":"#333333" };
   const EMOJI = { "E":"📙","9":"📕","8":"📓","7":"📗","6":"📰","5":"📒","4":"📗","3":"📘","2":"📔","1":"📖","0":"📚" };
   const shelfOf = ndc => ndc==="E" ? "E" : String(ndc)[0];
   // たなの いろが あかるいと しろもじが よみにくいので、くらい もじに きりかえる
@@ -814,7 +829,8 @@
     const numKey = keyLine==="top" ? " key" : "";
     const auKey  = keyLine==="mid" ? " key" : "";
     const volKey = keyLine==="bot" ? " key" : "";
-    return `<div class="lbl${big?' lbl-big':''}">`
+    const color = LABEL_COLOR[shelfOf(o.top)] || "#333333";
+    return `<div class="lbl${big?' lbl-big':''}" style="--label-color:${color}">`
       + `<div class="lbl-c1${numKey}">${p.big}</div>`
       + `<div class="lbl-c2">`
       +   `<div class="lbl-rest${numKey}">${p.rest}</div>`
