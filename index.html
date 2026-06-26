@@ -246,8 +246,7 @@
   }
   .clabel div { border-bottom:1.5px solid #bbb; padding:1px 0; }
   .clabel div:last-child { border-bottom:none; }
-  /* くらべる だん（いちばん めだたせる：おおきく・ふとく・あか） */
-  .clabel .key { font-weight:bold; color:#c0392b; font-size:17px; letter-spacing:-.5px; padding:2px 0; white-space:nowrap; }
+  .clabel .key { white-space:nowrap; }
   /* ===== 背ラベル（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻） ===== */
   .lbl {
     --label-color:#333;
@@ -266,7 +265,7 @@
   .lbl-c2 > div:last-child { border-bottom:none; }
   .lbl-rest { color:var(--label-color) !important; }
   .lbl-rest:empty { min-height:14px; }
-  .lbl .key { background:#fff4b8; box-shadow:inset 0 0 0 2px rgba(255,193,7,.75); }
+  .lbl .key { }
   /* おおきい ラベル（ターゲットの本） */
   .lbl-big { border-width:2px; }
   .lbl-big .lbl-c1 { font-size:52px; padding:0 3px; min-width:34px; }
@@ -818,7 +817,7 @@
   }
 
   // ===== 背ラベル HTML（図書館の実物どおり：左に「大きい分類1桁」＋右に のこり番号・著者・巻）=====
-  // keyLine … "top":番号 / "mid":著者 / "bot":巻 を あかく めだたせる
+  // keyLine … "top":番号 / "mid":著者 / "bot":巻（判定用。表示ではマーカーを付けない）
   function ndcParts(top){
     const t=String(top);
     if(t==="E" || t.length<=1) return { big:t, rest:"" };   // E など 1もじは そのまま
