@@ -216,24 +216,33 @@
     box-shadow:0 8px 0 #6e451f, inset 0 4px 0 rgba(255,255,255,.2);
   }
   .shelf-hint { text-align:center; color:#fff; font-weight:bold; font-size:14px; margin-bottom:10px; text-shadow:0 1px 2px rgba(0,0,0,.4); }
-  /* フェーズ2：あいうえおじゅんの ヒント用 五十音表（うすく ひょうじ・ひだり→みぎ） */
+  /* フェーズ2：あいうえおじゅんの ヒントパネル（その もんだいの「行」だけ 光る・ひだり→みぎ） */
   #gojuon {
     display:none;                 /* JSで author のとき .show を つける */
-    grid-template-columns:repeat(5, 1.5em);
+    grid-template-columns:repeat(5, 1.45em);
     justify-content:center;
-    gap:9px 6px;
+    gap:5px 5px;
     margin:0 auto 8px;
-    padding:8px 12px;
-    background:rgba(255,255,255,.45);
-    border-radius:10px;
-    opacity:.5;
+    padding:10px 14px 12px;
+    background:#fff7ea;
+    border:3px solid #ffd27a;
+    border-radius:16px;
+    box-shadow:0 4px 0 #f0bd63, 0 6px 14px rgba(0,0,0,.12);
     pointer-events:none; user-select:none;
   }
   #gojuon.show { display:inline-grid; }
   #gojuon span {
-    text-align:center; font-weight:bold; font-size:15px; line-height:1.2;
-    color:#5a3a18;
+    text-align:center; font-weight:bold; font-size:21px; line-height:1.18;
+    border-radius:9px; color:#d9cdb8;          /* きほんは うすめ */
+    transition:color .2s, background .2s, transform .2s;
   }
+  /* この もんだいの「行」＝くっきり色＋やさしい背景で 大きく */
+  #gojuon span.on {
+    color:#fff; background:#ff9d3d;
+    box-shadow:0 2px 0 #e07c1a; transform:scale(1.04);
+  }
+  /* それ いがいの もじ＝薄く グレーアウト（チャートの かたちは のこす） */
+  #gojuon span.off { color:#d3d3d3; background:transparent; }
   .slots {
     display:flex; gap:4px; align-items:flex-end; justify-content:center;
     background:#7a4a20; border-radius:8px; padding:9px 5px 6px;
@@ -672,6 +681,7 @@
       if(!items) break;
       const home = pick(gapsOf(items.length));
       const q = assembleStage("author", items, home, {stageLabel});
+      q.rows = rows.slice();   // ヒントパネルで 光らせる「行」（5音=1行／10音=2行）
       if(verifyOneGap(q)) return q;
     }
     return null;
@@ -796,6 +806,21 @@
     }
   }
 
+  // ===== ひらがなヒントパネル（その もんだいの「行」だけ 光らせる）=====
+  // active … 光らせる もじの はいれつ（例 ["あ","い","う","え","お"]）。null なら パネルを かくす。
+  function paintGojuon(active){
+    const gj = $("gojuon");
+    if(!active){ gj.classList.remove("show"); return; }
+    const on = new Set(active);
+    gj.querySelectorAll("span").forEach(sp=>{
+      const c = sp.textContent;
+      const has = !!c;
+      sp.classList.toggle("on",  has && on.has(c));    // この もんだいの 行 → くっきり
+      sp.classList.toggle("off", has && !on.has(c));   // それ いがい → うすく グレー
+    });
+    gj.classList.add("show");
+  }
+
   // ===== フェーズ2 ひょうじ =====
   function showPhase2(){
     const q = quiz[qIndex];
@@ -806,8 +831,9 @@
     const hk = (q.mode==="author" && q.hintKind==="title") ? "title" : q.mode;
     $("shelfHint").textContent = "📏 ひだり→みぎ：" + HINT[hk][0];
     $("orderHint").textContent = "（" + HINT[hk][1] + "）";
-    // あいうえおじゅん（ちょしゃ／題名）のときだけ 五十音表を うすく だす
-    $("gojuon").classList.toggle("show", q.mode==="author");
+    // あいうえおじゅん（ちょしゃ）のときだけ ひらがなヒントパネルを だす。
+    // しかも その もんだいの「行」だけ 光らせ、ほかは グレーアウト（5音=1行／10音=2行）。
+    paintGojuon(q.mode==="author" ? (q.rows||[]) : null);
     const slotsEl = $("slots");
     slotsEl.classList.remove("drophint");
     slotsEl.innerHTML = "";
