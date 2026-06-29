@@ -216,6 +216,24 @@
     box-shadow:0 8px 0 #6e451f, inset 0 4px 0 rgba(255,255,255,.2);
   }
   .shelf-hint { text-align:center; color:#fff; font-weight:bold; font-size:14px; margin-bottom:10px; text-shadow:0 1px 2px rgba(0,0,0,.4); }
+  /* フェーズ2：あいうえおじゅんの ヒント用 五十音表（うすく ひょうじ・ひだり→みぎ） */
+  #gojuon {
+    display:none;                 /* JSで author のとき .show を つける */
+    grid-template-columns:repeat(5, 1.5em);
+    justify-content:center;
+    gap:9px 6px;
+    margin:0 auto 8px;
+    padding:8px 12px;
+    background:rgba(255,255,255,.45);
+    border-radius:10px;
+    opacity:.5;
+    pointer-events:none; user-select:none;
+  }
+  #gojuon.show { display:inline-grid; }
+  #gojuon span {
+    text-align:center; font-weight:bold; font-size:15px; line-height:1.2;
+    color:#5a3a18;
+  }
   .slots {
     display:flex; gap:4px; align-items:flex-end; justify-content:center;
     background:#7a4a20; border-radius:8px; padding:9px 5px 6px;
@@ -438,6 +456,19 @@
   <div class="screen" id="phase2">
     <div class="instruct">ただしい じゅんばんに なる すきまに いれてね！<span class="small" id="orderHint"></span></div>
     <div id="shelfView">
+      <div id="gojuon" aria-hidden="true">
+        <span>あ</span><span>い</span><span>う</span><span>え</span><span>お</span>
+        <span>か</span><span>き</span><span>く</span><span>け</span><span>こ</span>
+        <span>さ</span><span>し</span><span>す</span><span>せ</span><span>そ</span>
+        <span>た</span><span>ち</span><span>つ</span><span>て</span><span>と</span>
+        <span>な</span><span>に</span><span>ぬ</span><span>ね</span><span>の</span>
+        <span>は</span><span>ひ</span><span>ふ</span><span>へ</span><span>ほ</span>
+        <span>ま</span><span>み</span><span>む</span><span>め</span><span>も</span>
+        <span>や</span><span></span><span>ゆ</span><span></span><span>よ</span>
+        <span>ら</span><span>り</span><span>る</span><span>れ</span><span>ろ</span>
+        <span>わ</span><span></span><span></span><span></span><span>を</span>
+        <span>ん</span><span></span><span></span><span></span><span></span>
+      </div>
       <div class="big-shelf">
         <div class="shelf-hint" id="shelfHint"></div>
         <div class="slots" id="slots"></div>
@@ -520,20 +551,20 @@
   const BOOKS = {
     // ちょしゃじゅん用：おなじ たなの ほんを ちょしゃきごう（あたまの 1もじ）で ならべる
     author: {
-      "E": [   // えほん（top="E"）
-        { t:"パンどろぼう", a:"し" },
-        { t:"だいピンチずかん", a:"す" },
-        { t:"りんご かもしれない", a:"よ" },
-        { t:"ぐりとぐら", a:"な" },
-        { t:"はらぺこ あおむし", a:"か" },
-        { t:"おしいれの ぼうけん", a:"ふ" },
-        { t:"わたしの ぼうし", a:"さ" },
-        { t:"14ひきの あさごはん", a:"い" },
-        { t:"スイミー", a:"れ" },
-        { t:"ノンタン", a:"き" },
-        { t:"おまえ うまそうだな", a:"み" },
-        { t:"じごくの そうべえ", a:"た" },
-        { t:"ねないこ だれだ", a:"せ" }
+      "E": [   // えほん（top="E"）※えほんは「本の題名（書名）のあいうえお順」。a＝題名の頭文字
+        { t:"パンどろぼう", a:"ぱ" },
+        { t:"だいピンチずかん", a:"だ" },
+        { t:"りんご かもしれない", a:"り" },
+        { t:"ぐりとぐら", a:"ぐ" },
+        { t:"はらぺこ あおむし", a:"は" },
+        { t:"おしいれの ぼうけん", a:"お" },
+        { t:"わたしの ぼうし", a:"わ" },
+        { t:"きんぎょが にげた", a:"き" },
+        { t:"スイミー", a:"す" },
+        { t:"ノンタン", a:"の" },
+        { t:"そらまめくんの ベッド", a:"そ" },
+        { t:"じごくの そうべえ", a:"じ" },
+        { t:"ねないこ だれだ", a:"ね" }
       ],
       "91": [ // にほんの ものがたり（top="91"）
         { t:"かいけつゾロリ", a:"は" },
@@ -712,6 +743,7 @@
   const KEYLINE = { author:"mid", volume:"bot", class:"top" };
   const HINT = {
     author:["ちょしゃの あいうえおじゅん", "あ→い→う→え→お… の じゅん"],
+    title :["だいめい（ほんの なまえ）の あいうえおじゅん", "あ→い→う→え→お… の じゅん"],
     volume:["まきすう（かんすう）の じゅん", "1→2→3→4… の じゅん"],
     class :["ぶんるいばんごうの じゅん", "ちいさい ばんごう→おおきい ばんごう"]
   };
@@ -760,7 +792,9 @@
     list.sort((x,y)=>kanaCmp(x.mid,y.mid));
     const W=Math.min(6,list.length), st=randInt(0,list.length-W), win=list.slice(st,st+W);
     const {ti,di}=chooseTiDi(W);
-    return assemble("author", win, ti, di);
+    const q = assemble("author", win, ti, di);
+    if(pool==="E") q.hintKind = "title";   // えほんは「題名の あいうえおじゅん」
+    return q;
   }
   function buildVolume(s){
     const W = Math.min(6, s.max), sv = randInt(1, s.max-W+1);
@@ -922,8 +956,11 @@
     curQ = q;
     curSlots = q.slots.map(s=>Object.assign({}, s));   // コピー（いれたら かきかえる）
     const keyLine = KEYLINE[q.mode];
-    $("shelfHint").textContent = "📏 ひだり→みぎ：" + HINT[q.mode][0];
-    $("orderHint").textContent = "（" + HINT[q.mode][1] + "）";
+    const hk = (q.mode==="author" && q.hintKind==="title") ? "title" : q.mode;
+    $("shelfHint").textContent = "📏 ひだり→みぎ：" + HINT[hk][0];
+    $("orderHint").textContent = "（" + HINT[hk][1] + "）";
+    // あいうえおじゅん（ちょしゃ／題名）のときだけ 五十音表を うすく だす
+    $("gojuon").classList.toggle("show", q.mode==="author");
     const slotsEl = $("slots");
     slotsEl.classList.remove("drophint");
     slotsEl.innerHTML = "";
