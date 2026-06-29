@@ -436,7 +436,7 @@
     <h1>📚 としょかん おかたづけ マスター！</h1>
     <div class="hud-right">
       <span class="returned" id="returned">📖 かえした本 <b>0</b>さつ</span>
-      <div class="progress" id="progress">1 / 3</div>
+      <div class="progress" id="progress">1 / 6</div>
     </div>
   </header>
 
@@ -503,7 +503,7 @@
         <div class="rules">
           🔵 <b>ステップ1</b>：ほんの ラベルの ばんごうを みて、<br>マップで おなじ <b>ばんごうの たな</b>を タップ！<br><br>
           🟢 <b>ステップ2</b>：ほんだなは <b>ひだり→みぎ</b>の じゅんばん。<br>ただしく ならぶ <b>すきま</b>に いれよう！<br><span style="font-size:12px">（あいうえおじゅん・まきすうじゅん・ばんごうじゅん）</span><br><br>
-          まいかい <b>にんきの ほん</b>から 3もん。<br><b>0〜9るい・えほん</b>の いろんな たなから<br>じどうで えらばれるよ（まいかい ちがう）。<br>せいかいすると「ピンポーン！」🔔
+          まいかい <b>にんきの ほん</b>から 6もん。<br><b>0〜9るい・えほん</b>の いろんな たなから<br>じどうで えらばれるよ（まいかい ちがう）。<br>せいかいすると「ピンポーン！」🔔
         </div>
         <button class="again-btn" id="howClose">とじる</button>
       </div>
@@ -842,15 +842,16 @@
     }
     return null;
   }
-  // 1ラウンド＝3もん。まいかい ちがう たな（ぶんるい）から えらぶので いろんな たなを れんしゅうできる。
+  // 1ラウンド＝6もん。まいかい ちがう たな（ぶんるい）から えらぶので いろんな たなを れんしゅうできる。
+  const ROUND_N = 6;
   function makeRound(){
-    const shelves = shuffle(SHELF_LIST).slice(0,3);
+    const shelves = shuffle(SHELF_LIST).slice(0,ROUND_N);
     const out=[];
     for(const sh of shelves){ const q=genForShelf(sh); if(q) out.push(q); }
-    while(out.length<3){ const q=genForShelf(pick(SHELF_LIST)); if(q) out.push(q); }
-    return out.slice(0,3);
+    while(out.length<ROUND_N){ const q=genForShelf(pick(SHELF_LIST)); if(q) out.push(q); }
+    return out.slice(0,ROUND_N);
   }
-  let quiz = [];   // こんかいの 3もん
+  let quiz = [];   // こんかいの 6もん
 
   // あいうえお（ごじゅうおん）の じゅんばん。だくてん・はんだくてんにも たいおう。
   // おなじ もじでは せいおん→だくおん→はんだくおん（き < ぎ、は < ば < ぱ）
@@ -1189,7 +1190,7 @@
   // ===== スタート／リスタート =====
   function startGame(){
     ensureAudio();
-    quiz = makeRound();         // にんきぼんから 3もん じどうせいせい（まいかい ちがう）
+    quiz = makeRound();         // にんきぼんから 6もん じどうせいせい（まいかい ちがう）
     qIndex=0; solved=false;
     $("clear").classList.remove("show");
     $("clear").querySelectorAll(".conf").forEach(e=>e.remove());
