@@ -216,33 +216,27 @@
     box-shadow:0 8px 0 #6e451f, inset 0 4px 0 rgba(255,255,255,.2);
   }
   .shelf-hint { text-align:center; color:#fff; font-weight:bold; font-size:14px; margin-bottom:10px; text-shadow:0 1px 2px rgba(0,0,0,.4); }
-  /* フェーズ2：あいうえおじゅんの ヒントパネル（その もんだいの「行」だけ 光る・ひだり→みぎ） */
+  /* フェーズ2：あいうえおじゅんの ヒント（その もんだいで つかう「行」だけ・ひだり→みぎ） */
+  /* ぜんぶの 50音は ださず コンパクトに → 返す本のラベルを かくさない */
   #gojuon {
     display:none;                 /* JSで author のとき .show を つける */
-    grid-template-columns:repeat(5, 1.45em);
+    grid-template-columns:repeat(5, 1.6em);
     justify-content:center;
-    gap:5px 5px;
-    margin:0 auto 8px;
-    padding:10px 14px 12px;
+    gap:4px 6px;
+    margin:0 auto 6px;
+    padding:7px 12px;
     background:#fff7ea;
     border:3px solid #ffd27a;
-    border-radius:16px;
-    box-shadow:0 4px 0 #f0bd63, 0 6px 14px rgba(0,0,0,.12);
+    border-radius:14px;
+    box-shadow:0 3px 0 #f0bd63, 0 5px 12px rgba(0,0,0,.12);
     pointer-events:none; user-select:none;
   }
   #gojuon.show { display:inline-grid; }
   #gojuon span {
-    text-align:center; font-weight:bold; font-size:21px; line-height:1.18;
-    border-radius:9px; color:#d9cdb8;          /* きほんは うすめ */
-    transition:color .2s, background .2s, transform .2s;
+    text-align:center; font-weight:bold; font-size:20px; line-height:1.5;
+    border-radius:8px; color:#fff; background:#ff9d3d;
+    box-shadow:0 2px 0 #e07c1a;
   }
-  /* この もんだいの「行」＝くっきり色＋やさしい背景で 大きく */
-  #gojuon span.on {
-    color:#fff; background:#ff9d3d;
-    box-shadow:0 2px 0 #e07c1a; transform:scale(1.04);
-  }
-  /* それ いがいの もじ＝薄く グレーアウト（チャートの かたちは のこす） */
-  #gojuon span.off { color:#d3d3d3; background:transparent; }
   .slots {
     display:flex; gap:4px; align-items:flex-end; justify-content:center;
     background:#7a4a20; border-radius:8px; padding:9px 5px 6px;
@@ -465,19 +459,8 @@
   <div class="screen" id="phase2">
     <div class="instruct">ただしい じゅんばんに なる すきまに いれてね！<span class="small" id="orderHint"></span></div>
     <div id="shelfView">
-      <div id="gojuon" aria-hidden="true">
-        <span>あ</span><span>い</span><span>う</span><span>え</span><span>お</span>
-        <span>か</span><span>き</span><span>く</span><span>け</span><span>こ</span>
-        <span>さ</span><span>し</span><span>す</span><span>せ</span><span>そ</span>
-        <span>た</span><span>ち</span><span>つ</span><span>て</span><span>と</span>
-        <span>な</span><span>に</span><span>ぬ</span><span>ね</span><span>の</span>
-        <span>は</span><span>ひ</span><span>ふ</span><span>へ</span><span>ほ</span>
-        <span>ま</span><span>み</span><span>む</span><span>め</span><span>も</span>
-        <span>や</span><span></span><span>ゆ</span><span></span><span>よ</span>
-        <span>ら</span><span>り</span><span>る</span><span>れ</span><span>ろ</span>
-        <span>わ</span><span></span><span></span><span></span><span>を</span>
-        <span>ん</span><span></span><span></span><span></span><span></span>
-      </div>
+      <!-- ひらがなヒント：その もんだいの「行」だけ JS で コンパクトに さしこむ -->
+      <div id="gojuon" aria-hidden="true"></div>
       <div class="big-shelf">
         <div class="shelf-hint" id="shelfHint"></div>
         <div class="slots" id="slots"></div>
@@ -807,17 +790,12 @@
   }
 
   // ===== ひらがなヒントパネル（その もんだいの「行」だけ 光らせる）=====
-  // active … 光らせる もじの はいれつ（例 ["あ","い","う","え","お"]）。null なら パネルを かくす。
+  // active … その もんだいの「行」のもじ（5音=5もじ／10音=10もじ）。null なら かくす。
+  // ぜんぶの 50音は ださず、つかう 行だけを コンパクトに ひょうじ（返す本のラベルを かくさない）。
   function paintGojuon(active){
     const gj = $("gojuon");
-    if(!active){ gj.classList.remove("show"); return; }
-    const on = new Set(active);
-    gj.querySelectorAll("span").forEach(sp=>{
-      const c = sp.textContent;
-      const has = !!c;
-      sp.classList.toggle("on",  has && on.has(c));    // この もんだいの 行 → くっきり
-      sp.classList.toggle("off", has && !on.has(c));   // それ いがい → うすく グレー
-    });
+    if(!active || !active.length){ gj.classList.remove("show"); gj.innerHTML=""; return; }
+    gj.innerHTML = active.map(c=>`<span>${c}</span>`).join("");
     gj.classList.add("show");
   }
 
