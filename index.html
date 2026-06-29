@@ -292,7 +292,7 @@
   .slot-empty {
     flex:1 1 0; min-width:0; max-width:72px; height:162px;
     box-sizing:border-box;
-    border:3px solid rgba(255,255,255,.55);
+    border:3px dashed rgba(255,255,255,.7);
     border-radius:6px;
     background:repeating-linear-gradient(45deg,rgba(255,255,255,.10),rgba(255,255,255,.10) 8px,transparent 8px,transparent 16px);
     display:flex; align-items:center; justify-content:center;
@@ -309,7 +309,7 @@
 
   /* ドラッグ／ひろった しゅんかんから、あきスペースを つよく 点めつ（ここに いれてね！） */
   #slots.drophint .slot-empty {
-    border:4px solid #ff9800;
+    border:4px dashed #ff9800;
     animation:dropBlink .55s ease-in-out infinite;
   }
   @keyframes dropBlink {
@@ -436,7 +436,7 @@
     <h1>📚 としょかん おかたづけ マスター！</h1>
     <div class="hud-right">
       <span class="returned" id="returned">📖 かえした本 <b>0</b>さつ</span>
-      <div class="progress" id="progress">1 / 6</div>
+      <div class="progress" id="progress">第1問 ／ ぜん6もん</div>
     </div>
   </header>
 
@@ -545,186 +545,6 @@
     { id:"area-0rui",      key:"0", c:C.lbl, label:"0", x:70,   y:71,   w:7.5, h:8 }
   ];
 
-  // ===== ほんの データベース（じっさいの にんきぼん・ひらがな）=====
-  // しょうがっこう としょかんの にんきぼんを もとに、もんだいを むげんに じどうせいせいする。
-  // mode … "author":ちょしゃの あいうえおじゅん / "volume":まきすうじゅん / "class":ぶんるいばんごうじゅん
-  const BOOKS = {
-    // ちょしゃじゅん用：おなじ たなの ほんを ちょしゃきごう（あたまの 1もじ）で ならべる
-    author: {
-      "E": [   // えほん（top="E"）※えほんは「本の題名（書名）のあいうえお順」。a＝題名の頭文字
-        { t:"パンどろぼう", a:"ぱ" },
-        { t:"だいピンチずかん", a:"だ" },
-        { t:"りんご かもしれない", a:"り" },
-        { t:"ぐりとぐら", a:"ぐ" },
-        { t:"はらぺこ あおむし", a:"は" },
-        { t:"おしいれの ぼうけん", a:"お" },
-        { t:"わたしの ぼうし", a:"わ" },
-        { t:"きんぎょが にげた", a:"き" },
-        { t:"スイミー", a:"す" },
-        { t:"ノンタン", a:"の" },
-        { t:"そらまめくんの ベッド", a:"そ" },
-        { t:"じごくの そうべえ", a:"じ" },
-        { t:"ねないこ だれだ", a:"ね" }
-      ],
-      "91": [ // にほんの ものがたり（top="91"）
-        { t:"かいけつゾロリ", a:"は" },
-        { t:"おばけずかん", a:"さ" },
-        { t:"ほうかご ミステリクラブ", a:"ち" },
-        { t:"ふしぎ だがしや", a:"ひ" },
-        { t:"ぼくらの なのかかん", a:"そ" },
-        { t:"まじょの たっきゅうびん", a:"か" },
-        { t:"シノダ", a:"と" },
-        { t:"くろまじょさんが とおる", a:"い" },
-        { t:"ぼくは おうさま", a:"て" },
-        { t:"はれ ときどき ぶた", a:"や" },
-        { t:"ふんとうする たすく", a:"ま" },
-        { t:"やぎこ せんせい", a:"な" },
-        { t:"せいれいの もりびと", a:"う" }
-      ],
-      "93": [ // がいこくの ものがたり（top="93"）
-        { t:"やせいの ロボット", a:"ぶ" },
-        { t:"エルマーの ぼうけん", a:"が" },
-        { t:"ハリー・ポッター", a:"ろ" },
-        { t:"マジック・ツリーハウス", a:"お" },
-        { t:"グレッグの ダメにっき", a:"き" },
-        { t:"ワンダー", a:"ぱ" },
-        { t:"あんごう クラブ", a:"わ" },
-        { t:"おおきな き", a:"し" },
-        { t:"マインクラフト", a:"え" },
-        { t:"ダレン・シャン", a:"だ" }
-      ]
-    },
-    // まきすうじゅん用：にんきシリーズ（top=2けた / ちょしゃ1もじ）
-    series: [
-      { name:"かいけつゾロリ", ndc:"91", a:"は", max:60 },
-      { name:"おしりたんてい", ndc:"E",  a:"と", max:11 },
-      { name:"ふしぎ だがしや", ndc:"91", a:"ひ", max:22 },
-      { name:"マジック・ツリーハウス", ndc:"93", a:"お", max:50 },
-      { name:"かがく サバイバル", ndc:"40", a:"ぽ", max:30 },
-      { name:"おばけずかん", ndc:"91", a:"さ", max:20 },
-      { name:"よつご ぐらし", ndc:"91", a:"ひ", max:18 },
-      { name:"ほねほねザウルス", ndc:"91", a:"ぐ", max:24 }
-    ],
-    // ばんごうじゅん用：おなじ たなで ぶんるいばんごう（2けた）の ちがう ほん（0〜9るい）
-    cls: {
-      "0": [
-        { t:"パソコンの ほん", a:"ぱ", ndc:"00" },
-        { t:"としょかんの ひみつ", a:"と", ndc:"01" },
-        { t:"ほんの できるまで", a:"ほ", ndc:"02" },
-        { t:"ひゃっか じてん", a:"ひ", ndc:"03" },
-        { t:"ざっしの ほん", a:"ざ", ndc:"05" },
-        { t:"はくぶつかんの ほん", a:"は", ndc:"06" },
-        { t:"しんぶんの ほん", a:"し", ndc:"07" },
-        { t:"きょうど しりょう", a:"き", ndc:"08" },
-        { t:"ぜんしゅう", a:"ぜ", ndc:"09" }
-      ],
-      "1": [
-        { t:"かんがえかたの ほん", a:"か", ndc:"10" },
-        { t:"こころの ほん", a:"こ", ndc:"11" },
-        { t:"ものの みかた", a:"も", ndc:"12" },
-        { t:"なやみ そうだん", a:"な", ndc:"14" },
-        { t:"いきかたの ほん", a:"い", ndc:"15" },
-        { t:"かみさまの はなし", a:"か", ndc:"16" },
-        { t:"じんじゃと おてら", a:"じ", ndc:"17" },
-        { t:"ほとけさまの はなし", a:"ほ", ndc:"18" }
-      ],
-      "2": [
-        { t:"れきし ぜんぱん", a:"れ", ndc:"20" },
-        { t:"にほんの れきし", a:"に", ndc:"21" },
-        { t:"アジアの れきし", a:"あ", ndc:"22" },
-        { t:"せかいの れきし", a:"せ", ndc:"23" },
-        { t:"アフリカの れきし", a:"あ", ndc:"24" },
-        { t:"アメリカの れきし", a:"あ", ndc:"25" },
-        { t:"えらいひとの でんき", a:"え", ndc:"28" },
-        { t:"こじんの でんき", a:"こ", ndc:"288" },
-        { t:"せかいの ちず", a:"ち", ndc:"29" }
-      ],
-      "3": [
-        { t:"しゃかいの しくみ", a:"し", ndc:"30" },
-        { t:"せいじの ほん", a:"せ", ndc:"31" },
-        { t:"けんぽうの ほん", a:"け", ndc:"32" },
-        { t:"おかねの はなし", a:"お", ndc:"33" },
-        { t:"とうけいの ほん", a:"と", ndc:"34" },
-        { t:"ぜいきんの ほん", a:"ぜ", ndc:"35" },
-        { t:"しごとの ほん", a:"し", ndc:"361" },
-        { t:"じょうほうかつよう", a:"じ", ndc:"366" },
-        { t:"ふくしと ぼうさい", a:"ふ", ndc:"369" },
-        { t:"がっこうの ほん", a:"が", ndc:"37" },
-        { t:"せかいの まつり", a:"ま", ndc:"38" },
-        { t:"みんわの ほん", a:"み", ndc:"39" }
-      ],
-      "4": [
-        { t:"かがくの ふしぎ", a:"か", ndc:"40" },
-        { t:"さんすうの ほん", a:"さ", ndc:"41" },
-        { t:"ぶつりの ほん", a:"ぶ", ndc:"42" },
-        { t:"かがくじっけん", a:"か", ndc:"43" },
-        { t:"うちゅうの ほん", a:"う", ndc:"44" },
-        { t:"てんきの ほん", a:"て", ndc:"451" },
-        { t:"うみの ほん", a:"う", ndc:"452" },
-        { t:"じしんの ほん", a:"じ", ndc:"453" },
-        { t:"きょうりゅう", a:"き", ndc:"457" },
-        { t:"いわと いし", a:"い", ndc:"458" },
-        { t:"しょくぶつ ずかん", a:"し", ndc:"47" },
-        { t:"どうぶつ ぜんぱん", a:"ど", ndc:"480" },
-        { t:"どうぶつ ずかん", a:"ど", ndc:"489" }
-      ],
-      "5": [
-        { t:"ぎじゅつの ほん", a:"ぎ", ndc:"50" },
-        { t:"かんきょうもんだい", a:"か", ndc:"51" },
-        { t:"いえの ほん", a:"い", ndc:"52" },
-        { t:"のりものの ほん", a:"の", ndc:"53" },
-        { t:"でんきの しくみ", a:"で", ndc:"54" },
-        { t:"ふねの ほん", a:"ふ", ndc:"55" },
-        { t:"ものづくり", a:"も", ndc:"58" },
-        { t:"ふくの ほん", a:"ふ", ndc:"593" },
-        { t:"しゅげいの ほん", a:"し", ndc:"594" },
-        { t:"りょうりの ほん", a:"り", ndc:"596" },
-        { t:"すまいの ほん", a:"す", ndc:"597" }
-      ],
-      "6": [
-        { t:"さんぎょうの ほん", a:"さ", ndc:"60" },
-        { t:"のうぎょうの ほん", a:"の", ndc:"61" },
-        { t:"やさいの そだてかた", a:"や", ndc:"62" },
-        { t:"ぼくじょうの どうぶつ", a:"ぼ", ndc:"64" },
-        { t:"もりの しごと", a:"も", ndc:"65" },
-        { t:"さかなと すいさん", a:"さ", ndc:"66" },
-        { t:"おみせの ほん", a:"お", ndc:"67" },
-        { t:"こうつうの ほん", a:"こ", ndc:"68" },
-        { t:"つうしんの ほん", a:"つ", ndc:"69" }
-      ],
-      "7": [
-        { t:"げいじゅつの ほん", a:"げ", ndc:"70" },
-        { t:"ちょうこくの ほん", a:"ち", ndc:"71" },
-        { t:"えの かきかた", a:"え", ndc:"72" },
-        { t:"しょどうの ほん", a:"し", ndc:"73" },
-        { t:"しゃしんの ほん", a:"し", ndc:"74" },
-        { t:"こうさく あそび", a:"こ", ndc:"75" },
-        { t:"おんがくの ほん", a:"お", ndc:"76" },
-        { t:"えいがと げき", a:"え", ndc:"77" },
-        { t:"スポーツの ほん", a:"す", ndc:"780" },
-        { t:"きゅうぎの ほん", a:"き", ndc:"783" },
-        { t:"すいえいの ほん", a:"す", ndc:"785" },
-        { t:"あそびの ほん", a:"あ", ndc:"79" }
-      ],
-      "8": [
-        { t:"ことばの ほん", a:"こ", ndc:"80" },
-        { t:"こくご じてん", a:"こ", ndc:"81" },
-        { t:"かんじ ドリル", a:"か", ndc:"82" },
-        { t:"えいごの ほん", a:"え", ndc:"83" },
-        { t:"ローマじの ほん", a:"ろ", ndc:"84" },
-        { t:"ドイツごの ほん", a:"ど", ndc:"85" },
-        { t:"さくぶんの ほん", a:"さ", ndc:"86" },
-        { t:"いろいろな ことば", a:"い", ndc:"89" }
-      ],
-      "9": [
-        { t:"にほんの ものがたり", a:"に", ndc:"91" },
-        { t:"かんこくの おはなし", a:"か", ndc:"92" },
-        { t:"えいべいの ものがたり", a:"え", ndc:"93" },
-        { t:"ドイツの おはなし", a:"ど", ndc:"94" }
-      ]
-    }
-  };
-
   // たな の いろ・えもじ（ぶんるいの あたまの すうじ／E ごとに）
   const LABEL_COLOR = {
     "E":"#c46b1f", "9":"#ef1d12", "8":"#9c1bc7", "7":"#25a64a", "6":"#666666",
@@ -770,47 +590,7 @@
   const pick = arr => arr[randInt(0, arr.length-1)];
   function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-  // ウィンドウから ターゲット(ti)と ダミーあき(di)を えらぶ（di は ti の となりに しない）
-  function chooseTiDi(W){
-    const ti = randInt(0, W-1);
-    const cand=[]; for(let i=0;i<W;i++) if(i!==ti && Math.abs(i-ti)>1) cand.push(i);
-    return { ti, di: pick(cand) };
-  }
-  // data：ならべおわった ほんの はいれつ。ti,di を あきにして もんだいに する。
-  function assemble(mode, data, ti, di){
-    const tg = data[ti];
-    const sk = shelfOf(tg.top);
-    const slots = data.map((s,i)=> (i===ti||i===di) ? { empty:true } : s);
-    return {
-      titleHtml: tg.title, cover: COVER[sk]||"#8a5a2c", coverEmoji: EMOJI[sk]||"📖",
-      shelfKey: sk, mode, label:{ top:tg.top, mid:tg.mid, bot:tg.bot }, slots
-    };
-  }
-  function buildAuthorPool(pool){      // pool: "E" / "91" / "93"
-    const seen={}, list=[];
-    for(const b of BOOKS.author[pool]){ if(!seen[b.a]){ seen[b.a]=1; list.push({top:pool, mid:b.a, bot:"-", title:b.t}); } }
-    list.sort((x,y)=>kanaCmp(x.mid,y.mid));
-    const W=Math.min(6,list.length), st=randInt(0,list.length-W), win=list.slice(st,st+W);
-    const {ti,di}=chooseTiDi(W);
-    const q = assemble("author", win, ti, di);
-    if(pool==="E") q.hintKind = "title";   // えほんは「題名の あいうえおじゅん」
-    return q;
-  }
-  function buildVolume(s){
-    const W = Math.min(6, s.max), sv = randInt(1, s.max-W+1);
-    const data=[]; for(let k=0;k<W;k++) data.push({top:s.ndc, mid:s.a, bot:String(sv+k), title:s.name});
-    const {ti,di}=chooseTiDi(W);
-    return assemble("volume", data, ti, di);
-  }
-  function buildClassShelf(shelf){
-    const seen={}, list=[];
-    for(const b of BOOKS.cls[shelf]){ if(!seen[b.ndc]){ seen[b.ndc]=1; list.push({top:b.ndc, mid:b.a, bot:"-", title:b.t}); } }
-    list.sort((x,y)=>ndcCmp(x.top,y.top));
-    const W=Math.min(6,list.length), st=randInt(0,list.length-W), win=list.slice(st,st+W);
-    const {ti,di}=chooseTiDi(W);
-    return assemble("class", win, ti, di);
-  }
-  // せいかいの あきが ちょうど 1つ だけか たしかめる
+  // せいかいの あきが ちょうど 1つ だけか たしかめる（ダミーの あきが あっても 正解は1か所）
   function verifyOneGap(q){
     const m=q.mode, T=keyOf(m,q.label); let cnt=0;
     q.slots.forEach((sl,idx)=>{
@@ -823,33 +603,99 @@
     return cnt===1;
   }
 
-  // ===== たな（ぶんるい）ごとに、できる ならべかた =====
-  const SHELF_LIST = ["0","1","2","3","4","5","6","7","8","9","E"];
-  const SHELF_MODES = {
-    "0":["class"], "1":["class"], "2":["class"], "3":["class"], "4":["class","volume"],
-    "5":["class"], "6":["class"], "7":["class"], "8":["class"],
-    "9":["author","class","volume"], "E":["author","volume"]
-  };
-  function genForShelf(shelf){
-    const modes = SHELF_MODES[shelf];
-    for(let t=0;t<16;t++){
-      const m = pick(modes);
-      let q=null;
-      if(m==="author"){ q = buildAuthorPool(shelf==="E" ? "E" : pick(["91","93"])); }
-      else if(m==="volume"){ const cand = BOOKS.series.filter(s=>shelfOf(s.ndc)===shelf); if(cand.length) q = buildVolume(pick(cand)); }
-      else { q = buildClassShelf(shelf); }
-      if(q && verifyOneGap(q)) return q;
+  // ===== 全6ステージ：固定の難易度ステップ（第1問→第6問で だんだん むずかしく）=====
+  // 五十音の「行（ぎょう）」。第3問は1行(5音)、第4問・5・6問は2行(10音)の中で出題。
+  const FULL_ROWS = [
+    ["あ","い","う","え","お"], ["か","き","く","け","こ"], ["さ","し","す","せ","そ"],
+    ["た","ち","つ","て","と"], ["な","に","ぬ","ね","の"], ["は","ひ","ふ","へ","ほ"],
+    ["ま","み","む","め","も"], ["ら","り","る","れ","ろ"]
+  ];
+  // 著者名の 2もじめ（せいおん中心＋だくおん少し：「おか < おだ」のような ならびも 出る）
+  const KANA2ND = ["う","き","く","さ","し","た","の","は","ま","み","ら","り","か","だ","が"];
+  const AUTHOR_NDC = ["91","E"];   // ものがたり(9類)／えほん(E)
+  const VOL_NDC    = ["91","E"];
+
+  // ならび（items）は ぜんぶで W=2G+1。ぐうすう番目＝「ほん」、きすう番目＝「あき（ドロップゾーン）」。
+  // あきは G個。せいかいは ターゲットの ホームの あき 1つだけ、のこりは ダミー。
+  function gapsOf(W){ const g=[]; for(let i=1;i<W;i+=2) g.push(i); return g; }   // きすうの index＝あき
+
+  function assembleStage(mode, items, home, opt){
+    const gapSet = new Set(gapsOf(items.length));
+    const tg = items[home];                 // home：ターゲットが はいる ホームの あき
+    const sk = shelfOf(tg.top);
+    const slots = items.map((s,i)=> gapSet.has(i) ? { empty:true } : s);
+    const q = {
+      titleHtml: tg.title, cover: COVER[sk]||"#8a5a2c", coverEmoji: EMOJI[sk]||"📖",
+      shelfKey: sk, mode, label:{ top:tg.top, mid:tg.mid, bot:tg.bot }, slots,
+      stageLabel: opt.stageLabel
+    };
+    if(opt.hintKind) q.hintKind = opt.hintKind;
+    return q;
+  }
+
+  // 巻数：つづき(1,2,3…)／とびとび(2,5,7…)
+  function volItems(G, skip){
+    const W = 2*G+1;
+    const seq=[ randInt(1,6) ];
+    for(let i=1;i<W;i++) seq.push(seq[i-1] + (skip ? randInt(1,3) : 1));
+    const top = pick(VOL_NDC);
+    const au  = pick(["あ","か","さ","た","な","は","ま","や","ら"]);
+    const title = (top==="E") ? "えほんシリーズ" : "ものがたり";
+    return seq.map(v=> ({ top, mid:au, bot:String(v), title }));
+  }
+  // 著者名：rows の 中の あいうえおじゅん（2もじの 著者名を ソートして つかう）
+  function authorItems(G, rows){
+    const W = 2*G+1;
+    const pool=[];
+    for(const f of rows) for(const s of KANA2ND) pool.push(f+s);
+    pool.sort(kanaCmp);
+    if(pool.length < W) return null;
+    const st = randInt(0, pool.length - W);
+    const win = pool.slice(st, st+W);
+    const top = pick(AUTHOR_NDC);
+    const title = (top==="E") ? "えほん" : "ものがたり";
+    return win.map(name=> ({ top, mid:name, bot:"-", title }));
+  }
+
+  function buildVolStage(G, skip, stageLabel){
+    for(let t=0;t<24;t++){
+      const items = volItems(G, skip);
+      const home = pick(gapsOf(items.length));
+      const q = assembleStage("volume", items, home, {stageLabel});
+      if(verifyOneGap(q)) return q;
     }
     return null;
   }
-  // 1ラウンド＝6もん。まいかい ちがう たな（ぶんるい）から えらぶので いろんな たなを れんしゅうできる。
+  function buildAuthorStage(G, rows, stageLabel){
+    for(let t=0;t<24;t++){
+      const items = authorItems(G, rows);
+      if(!items) break;
+      const home = pick(gapsOf(items.length));
+      const q = assembleStage("author", items, home, {stageLabel});
+      if(verifyOneGap(q)) return q;
+    }
+    return null;
+  }
+  function oneRow(){ return pick(FULL_ROWS); }
+  function twoRows(){ const i=randInt(0,FULL_ROWS.length-2); return FULL_ROWS[i].concat(FULL_ROWS[i+1]); }
+  // 第5・6問は「巻数とびとび」か「著者10音」を ランダムで（あきは 4つ／5つ）
+  function advStage(G, label){ return Math.random()<0.5 ? buildVolStage(G, true, label) : buildAuthorStage(G, twoRows(), label); }
+  function fallbackStage(i){     // まんいちの ほけん（かんたんな 巻数もんだい）
+    const G = i>=5?5:(i>=4?4:3);
+    return buildVolStage(G, false, "第"+(i+1)+"問") || buildVolStage(3, false, "第"+(i+1)+"問");
+  }
+
+  // 1ラウンド＝6もん。第1問→第6問の じゅんで だんだん むずかしく（あき 3→3→3→3→4→5）
   const ROUND_N = 6;
   function makeRound(){
-    const shelves = shuffle(SHELF_LIST).slice(0,ROUND_N);
-    const out=[];
-    for(const sh of shelves){ const q=genForShelf(sh); if(q) out.push(q); }
-    while(out.length<ROUND_N){ const q=genForShelf(pick(SHELF_LIST)); if(q) out.push(q); }
-    return out.slice(0,ROUND_N);
+    return [
+      buildVolStage(3, false, "第1問"),    // 巻数・つづき／あき3
+      buildVolStage(3, true,  "第2問"),    // 巻数・とびとび／あき3
+      buildAuthorStage(3, oneRow(),  "第3問"),  // 著者名・5音／あき3
+      buildAuthorStage(3, twoRows(), "第4問"),  // 著者名・10音／あき3
+      advStage(4, "第5問"),                // とびとび or 10音／あき4
+      advStage(5, "第6問")                 // とびとび or 10音／あき5
+    ].map((q,i)=> q || fallbackStage(i));
   }
   let quiz = [];   // こんかいの 6もん
 
@@ -924,7 +770,7 @@
   // ===== フェーズ1 ひょうじ =====
   function showPhase1(){
     const q = quiz[qIndex];
-    $("progress").textContent = (qIndex+1)+" / "+quiz.length;
+    $("progress").textContent = (q.stageLabel || ("第"+(qIndex+1)+"問")) + " ／ ぜん" + quiz.length + "もん";
     // フェーズ1は「たな」を えらぶので、ぶんるい（うえだん）を めだたせる
     $("targetCard1").innerHTML = `
       <div class="book-cover" style="background:${q.cover}">${q.coverEmoji}</div>
