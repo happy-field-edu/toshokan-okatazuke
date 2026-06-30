@@ -560,7 +560,7 @@
     class :["ぶんるいばんごうの じゅん", "ちいさい ばんごう→おおきい ばんごう"]
   };
   function keyOf(mode, o){
-    if(mode==="author") return o.mid;
+    if(mode==="author") return o.sortKey || o.mid;  // えほんは sortKey＝題名のよみ全体で ならべる
     if(mode==="volume") return Number(o.bot);
     return String(o.top);                       // class：ぶんるい番号は 文字列（3桁混在に たいおう）
   }
@@ -621,6 +621,34 @@
     {ndc:"91", title:"ものがたり"},    // 9類 ぶんがく
     {ndc:"E",  title:"えほん"}         // えほん
   ];
+  // えほん（E）は じっさいの 絵本の だいめいを つかい、「題名のあいうえおじゅん」で ならべる。
+  // t＝せなかに だす だいめい／y＝ならべかえ用の よみ（ひらがな全体）。よみ順に ソートして つかう。
+  const REAL_EHON = [
+    {t:"ありとすいか",         y:"ありとすいか"},
+    {t:"いやいやえん",         y:"いやいやえん"},
+    {t:"うずらちゃん",         y:"うずらちゃん"},
+    {t:"おおきなかぶ",         y:"おおきなかぶ"},
+    {t:"おしいれのぼうけん",   y:"おしいれのぼうけん"},
+    {t:"からすのパンやさん",   y:"からすのぱんやさん"},
+    {t:"きんぎょがにげた",     y:"きんぎょがにげた"},
+    {t:"ぐりとぐら",           y:"ぐりとぐら"},
+    {t:"こすずめのぼうけん",   y:"こすずめのぼうけん"},
+    {t:"スイミー",             y:"すいみい"},
+    {t:"そらまめくん",         y:"そらまめくん"},
+    {t:"だるまさんが",         y:"だるまさんが"},
+    {t:"ちいさいおうち",       y:"ちいさいおうち"},
+    {t:"てぶくろ",             y:"てぶくろ"},
+    {t:"どろんこハリー",       y:"どろんこはりい"},
+    {t:"ねないこだれだ",       y:"ねないこだれだ"},
+    {t:"ノンタン",             y:"のんたん"},
+    {t:"はらぺこあおむし",     y:"はらぺこあおむし"},
+    {t:"パンどろぼう",         y:"ぱんどろぼう"},
+    {t:"ふしぎなナイフ",       y:"ふしぎなないふ"},
+    {t:"もこもこもこ",         y:"もこもこもこ"},
+    {t:"みんなうんち",         y:"みんなうんち"},
+    {t:"らいおんとねずみ",     y:"らいおんとねずみ"},
+    {t:"りんごかもしれない",   y:"りんごかもしれない"}
+  ];
 
   // ならび（items）は ぜんぶで W=2G+1。ぐうすう番目＝「ほん」、きすう番目＝「あき（ドロップゾーン）」。
   // あきは G個。せいかいは ターゲットの ホームの あき 1つだけ、のこりは ダミー。
@@ -680,6 +708,39 @@
     }
     return null;
   }
+  // えほん（E）：じっさいの 絵本の だいめいを 題名のあいうえおじゅんで ならべる
+  function baseKana(c){    // だくおん・はんだくおんを せいおんに（ぐ→く、ぱ→は）。ヒント表の「行」さがし用
+    let i=DAKU.indexOf(c);    if(i>=0) return DAKU_BASE[i];
+    i=HANDAKU.indexOf(c);     if(i>=0) return HANDAKU_BASE[i];
+    return c;
+  }
+  function ehonItems(G){
+    const W = 2*G+1;
+    const sorted = REAL_EHON.slice().sort((a,b)=>kanaCmp(a.y,b.y));
+    if(sorted.length < W) return null;
+    const st = randInt(0, sorted.length - W);
+    const win = sorted.slice(st, st+W);
+    // mid＝題名の頭文字（ラベル2段目）／sortKey＝よみ全体（ならべかえ）／title＝じっさいの だいめい
+    return win.map(b=> ({ top:"E", mid:b.y[0], bot:"-", title:b.t, sortKey:b.y }));
+  }
+  function ehonRows(items){    // ヒント表に だす「行」＝つかわれている 頭文字の 行だけ
+    const bases = new Set(items.map(o=> baseKana(o.mid)));
+    const out=[];
+    for(const row of FULL_ROWS){ if(row.some(c=>bases.has(c))) out.push(...row); }
+    return out;
+  }
+  function buildEhonStage(G, stageLabel){
+    for(let t=0;t<24;t++){
+      const items = ehonItems(G);
+      if(!items) break;
+      const home = pick(gapsOf(items.length));
+      const q = assembleStage("author", items, home, {stageLabel});
+      q.hintKind = "title";        // ヒント文を「だいめいの あいうえおじゅん」に
+      q.rows = ehonRows(items);    // パネルは つかう行だけ コンパクトに
+      if(verifyOneGap(q)) return q;
+    }
+    return null;
+  }
   function oneRow(){ return pick(FULL_ROWS); }
   function twoRows(){ const i=randInt(0,FULL_ROWS.length-2); return FULL_ROWS[i].concat(FULL_ROWS[i+1]); }
   // 第5・6問は「巻数とびとび」か「著者10音」を ランダムで（あきは 4つ／5つ）
@@ -693,14 +754,17 @@
   // 6ステージそれぞれに ちがう分類（NDC_BOOKS）を わりあてて、いろんな たなを 出題する。
   const ROUND_N = 6;
   function makeRound(){
-    const bk = shuffle(NDC_BOOKS);       // ラウンドごとに ちがう分類を 6つ
+    const bk = shuffle(NDC_BOOKS.filter(b=>b.ndc!=="E"));  // 巻数・著者ステージは E いがいの分類
+    const eStage = randInt(3, 4);        // 第3問 or 第4問 を「えほん（実在タイトル・題名じゅん）」に
+    const titleStage = (no, G, rows, label, book)=>
+      (no===eStage) ? buildEhonStage(G, label) : buildAuthorStage(G, rows, label, book);
     return [
-      buildVolStage(3, false, "第1問", bk[0]),    // 巻数・つづき／あき3
-      buildVolStage(3, true,  "第2問", bk[1]),    // 巻数・とびとび／あき3
-      buildAuthorStage(3, oneRow(),  "第3問", bk[2]),  // 著者名・5音／あき3
-      buildAuthorStage(3, twoRows(), "第4問", bk[3]),  // 著者名・10音／あき3
-      advStage(4, "第5問", bk[4]),                // とびとび or 10音／あき4
-      advStage(5, "第6問", bk[5])                 // とびとび or 10音／あき5
+      buildVolStage(3, false, "第1問", bk[0]),         // 巻数・つづき／あき3
+      buildVolStage(3, true,  "第2問", bk[1]),         // 巻数・とびとび／あき3
+      titleStage(3, 3, oneRow(),  "第3問", bk[2]),     // 著者名5音 or えほん題名じゅん／あき3
+      titleStage(4, 3, twoRows(), "第4問", bk[3]),     // 著者名10音 or えほん題名じゅん／あき3
+      advStage(4, "第5問", bk[4]),                     // とびとび or 10音／あき4
+      advStage(5, "第6問", bk[5])                      // とびとび or 10音／あき5
     ].map((q,i)=> q || fallbackStage(i, bk[i]));
   }
   let quiz = [];   // こんかいの 6もん
