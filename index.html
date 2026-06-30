@@ -604,8 +604,23 @@
   ];
   // 著者名の 2もじめ（せいおん中心＋だくおん少し：「おか < おだ」のような ならびも 出る）
   const KANA2ND = ["う","き","く","さ","し","た","の","は","ま","み","ら","り","か","だ","が"];
-  const AUTHOR_NDC = ["91","E"];   // ものがたり(9類)／えほん(E)
-  const VOL_NDC    = ["91","E"];
+  // いろんな分類から出題する（フェーズ1で いろんな たなを タップできる）。ndc＝分類番号／title＝ジャンル名。
+  // 0〜9類＋えほんE を ぜんぶ ふくむ。1ラウンドで 6つの ちがう分類を つかう。
+  const NDC_BOOKS = [
+    {ndc:"03", title:"じてん"},        // 0類 そうき
+    {ndc:"16", title:"かみさま"},      // 1類 てつがく・しゅうきょう
+    {ndc:"21", title:"れきし"},        // 2類 れきし・ちり
+    {ndc:"36", title:"しゃかい"},      // 3類 しゃかい
+    {ndc:"45", title:"きょうりゅう"},  // 4類 しぜんかがく
+    {ndc:"48", title:"いきもの"},      // 4類 どうぶつ
+    {ndc:"53", title:"きかい"},        // 5類 ぎじゅつ
+    {ndc:"62", title:"やさい"},        // 6類 さんぎょう
+    {ndc:"72", title:"おえかき"},      // 7類 げいじゅつ
+    {ndc:"78", title:"スポーツ"},      // 7類 スポーツ
+    {ndc:"81", title:"ことば"},        // 8類 げんご
+    {ndc:"91", title:"ものがたり"},    // 9類 ぶんがく
+    {ndc:"E",  title:"えほん"}         // えほん
+  ];
 
   // ならび（items）は ぜんぶで W=2G+1。ぐうすう番目＝「ほん」、きすう番目＝「あき（ドロップゾーン）」。
   // あきは G個。せいかいは ターゲットの ホームの あき 1つだけ、のこりは ダミー。
@@ -625,18 +640,16 @@
     return q;
   }
 
-  // 巻数：つづき(1,2,3…)／とびとび(2,5,7…)
-  function volItems(G, skip){
+  // 巻数：つづき(1,2,3…)／とびとび(2,5,7…)。book＝その もんだいの 分類（NDC_BOOKSの ひとつ）
+  function volItems(G, skip, book){
     const W = 2*G+1;
     const seq=[ randInt(1,6) ];
     for(let i=1;i<W;i++) seq.push(seq[i-1] + (skip ? randInt(1,3) : 1));
-    const top = pick(VOL_NDC);
-    const au  = pick(["あ","か","さ","た","な","は","ま","や","ら"]);
-    const title = (top==="E") ? "えほんシリーズ" : "ものがたり";
-    return seq.map(v=> ({ top, mid:au, bot:String(v), title }));
+    const au = pick(["あ","か","さ","た","な","は","ま","や","ら"]);
+    return seq.map(v=> ({ top:book.ndc, mid:au, bot:String(v), title:book.title }));
   }
   // 著者名：rows の 中の あいうえおじゅん（2もじの 著者名を ソートして つかう）
-  function authorItems(G, rows){
+  function authorItems(G, rows, book){
     const W = 2*G+1;
     const pool=[];
     for(const f of rows) for(const s of KANA2ND) pool.push(f+s);
@@ -644,23 +657,21 @@
     if(pool.length < W) return null;
     const st = randInt(0, pool.length - W);
     const win = pool.slice(st, st+W);
-    const top = pick(AUTHOR_NDC);
-    const title = (top==="E") ? "えほん" : "ものがたり";
-    return win.map(name=> ({ top, mid:name, bot:"-", title }));
+    return win.map(name=> ({ top:book.ndc, mid:name, bot:"-", title:book.title }));
   }
 
-  function buildVolStage(G, skip, stageLabel){
+  function buildVolStage(G, skip, stageLabel, book){
     for(let t=0;t<24;t++){
-      const items = volItems(G, skip);
+      const items = volItems(G, skip, book);
       const home = pick(gapsOf(items.length));
       const q = assembleStage("volume", items, home, {stageLabel});
       if(verifyOneGap(q)) return q;
     }
     return null;
   }
-  function buildAuthorStage(G, rows, stageLabel){
+  function buildAuthorStage(G, rows, stageLabel, book){
     for(let t=0;t<24;t++){
-      const items = authorItems(G, rows);
+      const items = authorItems(G, rows, book);
       if(!items) break;
       const home = pick(gapsOf(items.length));
       const q = assembleStage("author", items, home, {stageLabel});
@@ -672,23 +683,25 @@
   function oneRow(){ return pick(FULL_ROWS); }
   function twoRows(){ const i=randInt(0,FULL_ROWS.length-2); return FULL_ROWS[i].concat(FULL_ROWS[i+1]); }
   // 第5・6問は「巻数とびとび」か「著者10音」を ランダムで（あきは 4つ／5つ）
-  function advStage(G, label){ return Math.random()<0.5 ? buildVolStage(G, true, label) : buildAuthorStage(G, twoRows(), label); }
-  function fallbackStage(i){     // まんいちの ほけん（かんたんな 巻数もんだい）
+  function advStage(G, label, book){ return Math.random()<0.5 ? buildVolStage(G, true, label, book) : buildAuthorStage(G, twoRows(), label, book); }
+  function fallbackStage(i, book){     // まんいちの ほけん（かんたんな 巻数もんだい）
     const G = i>=5?5:(i>=4?4:3);
-    return buildVolStage(G, false, "第"+(i+1)+"問") || buildVolStage(3, false, "第"+(i+1)+"問");
+    return buildVolStage(G, false, "第"+(i+1)+"問", book) || buildVolStage(3, false, "第"+(i+1)+"問", book);
   }
 
-  // 1ラウンド＝6もん。第1問→第6問の じゅんで だんだん むずかしく（あき 3→3→3→3→4→5）
+  // 1ラウンド＝6もん。第1問→第6問の じゅんで だんだん むずかしく（あき 3→3→3→3→4→5）。
+  // 6ステージそれぞれに ちがう分類（NDC_BOOKS）を わりあてて、いろんな たなを 出題する。
   const ROUND_N = 6;
   function makeRound(){
+    const bk = shuffle(NDC_BOOKS);       // ラウンドごとに ちがう分類を 6つ
     return [
-      buildVolStage(3, false, "第1問"),    // 巻数・つづき／あき3
-      buildVolStage(3, true,  "第2問"),    // 巻数・とびとび／あき3
-      buildAuthorStage(3, oneRow(),  "第3問"),  // 著者名・5音／あき3
-      buildAuthorStage(3, twoRows(), "第4問"),  // 著者名・10音／あき3
-      advStage(4, "第5問"),                // とびとび or 10音／あき4
-      advStage(5, "第6問")                 // とびとび or 10音／あき5
-    ].map((q,i)=> q || fallbackStage(i));
+      buildVolStage(3, false, "第1問", bk[0]),    // 巻数・つづき／あき3
+      buildVolStage(3, true,  "第2問", bk[1]),    // 巻数・とびとび／あき3
+      buildAuthorStage(3, oneRow(),  "第3問", bk[2]),  // 著者名・5音／あき3
+      buildAuthorStage(3, twoRows(), "第4問", bk[3]),  // 著者名・10音／あき3
+      advStage(4, "第5問", bk[4]),                // とびとび or 10音／あき4
+      advStage(5, "第6問", bk[5])                 // とびとび or 10音／あき5
+    ].map((q,i)=> q || fallbackStage(i, bk[i]));
   }
   let quiz = [];   // こんかいの 6もん
 
